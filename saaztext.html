@@ -1100,6 +1100,39 @@ function av(u,sz=34,r=8){return`<div style="width:${sz}px;height:${sz}px;border-
 fbListen(function(evt) {
   if (!evt.data) return;
 
+  // Nova výzva — posádka ji dostane přes Firebase
+  if (evt.data.type === 'nova_vyzva') {
+    if (!CU || CU.role !== 'crew') return;
+    const p = evt.data.payload;
+    if (!p || !p.recipients || !p.recipients.includes(CU.id)) return;
+    // Zkontroluj jestli výzva už existuje
+    if (alerts.find(a => a.id === p.id)) return;
+    // Přidej výzvu do lokálního pole posádky
+    const kl = KLAS.find(k => k.id === p.klasifikace) || {id:p.klasifikace, label:p.klasifikaceLabel||p.klasifikace, icon:'ti-alert-circle', color:'var(--red)'};
+    const a = {
+      id: p.id,
+      klasifikace: kl,
+      ulice: p.ulice||'', cp: p.cp||'', co: p.co||'', mesto: p.mesto||'',
+      adresa: p.adresa||[p.ulice,p.cp,p.mesto].filter(Boolean).join(' '),
+      upresneni: p.upresneni||'',
+      pacient: p.pacient||'', prijmeni: p.prijmeni||'', jmeno: p.jmeno||'',
+      pohlavi: p.pohlavi||'', vek: p.vek||'',
+      oznam: p.oznam||'', oznamTel: p.oznamTel||'',
+      poznamka: p.poznamka||'',
+      casVyzvy: p.casVyzvy,
+      recipients: p.recipients||[],
+      confirmed: [], ukoncil: [], status: 'active',
+      notes: p.poznamka ? [{time:new Date(),author:'Dispečer',text:p.poznamka}] : [],
+      log: [{time:new Date(),type:'odeslano',text:'Výzva přijata ze SaazTextu'}]
+    };
+    alerts.unshift(a);
+    USERS[CU.id].pending.push({alertId:a.id, type:'nova'});
+    _stSave();
+    renderCrewAlerts();
+    playAlarm();
+    setTimeout(checkPendingNotifs, 300);
+  }
+
   if (evt.data.type === 'vyzva_potvrzena') {
     const { alertId, login } = evt.data;
     const a = alerts.find(x => x.id === alertId);
