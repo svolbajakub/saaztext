@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SaazText</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif}
+:root{
+  --teal:#0D7C7C;--teal-light:#E1F5EE;
+  --red:#E3000B;--red-light:#FCEBEB;--red-mid:#A32D2D;
+  --orange:#D85A30;--orange-light:#FAECE7;
+  --blue:#185FA5;--blue-light:#E6F1FB;
+  --purple:#533AB7;--purple-light:#EEEDFE;
+  --green:#3B6D11;--green-light:#EAF3DE;
+  --surface:#FFF;--surface2:#F8F9FA;--surface3:#F1F3F4;
+  --border:#E5E7EB;--border2:#D1D5DB;
+  --text:#111827;--text2:#6B7280;--text3:#9CA3AF;
+}
+body{background:var(--surface2);min-height:100vh}
+#app{max-width:680px;margin:0 auto;padding:16px;min-height:100vh}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border2);border-radius:10px;font-size:14px;color:var(--text);background:var(--surface);outline:none;transition:border .2s;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--teal)}
+textarea{resize:vertical;min-height:64px}
+label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px;display:block}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
+.btn-primary{background:var(--teal);color:#fff}.btn-primary:hover{background:#0A6A6A}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#B50009}
+.btn-warning{background:var(--orange);color:#fff}.btn-warning:hover{background:#B84A22}
+.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2)}.btn-ghost:hover{background:var(--surface3)}
+.btn-purple{background:var(--purple);color:#fff}.btn-purple:hover{background:#3E2A91}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-red{background:var(--red-light);color:var(--red-mid)}
+.badge-teal{background:var(--teal-light);color:var(--teal)}
+.badge-gray{background:var(--surface3);color:var(--text2)}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-orange{background:var(--orange-light);color:var(--orange)}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+.badge-purple{background:var(--purple-light);color:var(--purple)}
+.card{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:20px}
+.screen{display:none}.screen.active{display:block}
+.field{margin-bottom:14px}
+.sc-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border2);border-radius:10px;cursor:pointer;transition:all .15s;user-select:none;background:var(--surface)}
+.sc-btn.on-zzs{border-color:var(--teal);background:var(--teal-light)}
+.sc-btn.on-hzs{border-color:var(--red);background:var(--red-light)}
+.sc-btn.on-pcr{border-color:var(--blue);background:var(--blue-light)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:22px;padding:28px;max-width:380px;width:100%;text-align:center}
+.modal-left{text-align:left;max-width:440px}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.pulse{animation:pulse 1s ease-in-out infinite}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.slide-in{animation:slideIn .25s ease}
+.log-item{padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}
+.log-item:last-child{border-bottom:none}
+.note-bubble{background:var(--orange-light);border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:8px 12px;margin-top:6px;font-size:13px;color:var(--text);line-height:1.5}
+.user-chip{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border2);border-radius:10px;cursor:pointer;transition:all .15s;user-select:none}
+.user-chip.selected{border-color:var(--teal);background:var(--teal-light)}
+/* Chat */
+.chat-wrap{display:flex;flex-direction:column;gap:10px;padding:16px 0}
+.chat-msg{display:flex;gap:8px;align-items:flex-end}
+.chat-msg.mine{flex-direction:row-reverse}
+.chat-bubble{max-width:75%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5}
+.chat-bubble.theirs{background:var(--surface3);color:var(--text);border-radius:4px 16px 16px 16px}
+.chat-bubble.mine{background:var(--teal);color:#fff;border-radius:16px 4px 16px 16px}
+.chat-bubble.system{background:var(--purple-light);color:var(--purple);border-radius:10px;font-size:13px;font-weight:500}
+.chat-time{font-size:10px;color:var(--text3);margin-top:3px}
+.chat-input-row{display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border);align-items:flex-end}
+/* Avízo card */
+.avizo-card{border-radius:14px;border:2px solid var(--purple);overflow:hidden}
+.avizo-header{background:var(--purple);padding:12px 16px;display:flex;align-items:center;gap:10px}
+.avizo-body{padding:14px 16px;background:var(--surface)}
+.avizo-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.avizo-row:last-child{border-bottom:none}
+.avizo-label{color:var(--text2);font-weight:500}
+.avizo-val{color:var(--text);font-weight:600;text-align:right;max-width:60%}
+/* Tabs */
+.tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px}
+.tab-btn{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab-btn.active{color:var(--teal);border-bottom-color:var(--teal)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══ LOGIN ═══ -->
+<div id="screen-login" class="screen active">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding-bottom:60px">
+    <div style="width:72px;height:72px;background:var(--teal);border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+      <i class="ti ti-ambulance" style="font-size:36px;color:#fff"></i>
+    </div>
+    <h1 style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px">SaazText</h1>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:36px">Operační komunikace ZZS</p>
+    <div class="card" style="width:100%;max-width:380px">
+      <div class="field"><label>Uživatelské jméno</label><input type="text" id="login-user" placeholder="např. jan.dvorak" autocomplete="off"></div>
+      <div class="field" style="margin-bottom:20px"><label>Heslo</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:15px" onclick="doLogin()"><i class="ti ti-login"></i> Přihlásit se</button>
+      <p id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:10px;display:none">Nesprávné přihlašovací údaje</p>
+    </div>
+    <div style="margin-top:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:14px 18px;max-width:380px;width:100%">
+      <p style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">Demo účty (heslo: zzs2024)</p>
+      <div id="demo-list" style="display:grid;gap:3px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DISPATCHER ═══ -->
+<div id="screen-dispatcher" class="screen">
+  <!-- ST Topbar s accordionem -->
+  <div style="margin-bottom:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="disp-av" style="width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0"></div>
+        <div>
+          <p style="font-size:15px;font-weight:800;color:var(--text);margin:0" id="disp-name">Dispečer</p>
+          <p style="font-size:11px;color:var(--text2);margin:0">Operační středisko</p>
+        </div>
+      </div>
+      <button class="btn btn-ghost" style="font-size:13px" onclick="doLogout()"><i class="ti ti-logout"></i> Odhlásit</button>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" id="dtab-vyzvy" onclick="dispTab('vyzvy')"><i class="ti ti-send" style="font-size:13px"></i> Výzvy</button>
+    <button class="tab-btn" id="dtab-aviza" onclick="dispTab('aviza')"><i class="ti ti-stethoscope" style="font-size:13px"></i> Avíza <span id="avizo-badge-disp" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px"></span></button>
+  </div>
+  <!-- Výzvy tab -->
+  <div id="d-tab-vyzvy">
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn" id="vtab-new" onclick="vyzvaTab('new')" style="background:var(--teal);color:#fff;font-size:13px"><i class="ti ti-plus"></i> Nová výzva</button>
+      <button class="btn btn-ghost" id="vtab-sent" onclick="vyzvaTab('sent')" style="font-size:13px"><i class="ti ti-list"></i> Odeslané</button>
+    </div>
+    <div id="vtab-new-content">
+      <div class="card" style="margin-bottom:12px">
+        <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px"><i class="ti ti-alert-triangle" style="color:var(--red)"></i> Klasifikace události</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="klas-grid"></div>
+        <div class="field" style="margin-top:12px"><label>Poznámka k výzvě</label><textarea id="f-pozn" placeholder="Doplňující informace od volajícího..." style="min-height:56px"></textarea></div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px"><i class="ti ti-map-pin" style="color:var(--teal)"></i> Adresa události</p>
+        <div style="display:grid;grid-template-columns:1fr 72px 72px;gap:10px">
+          <div class="field"><label>Ulice *</label><input type="text" id="f-ulice" placeholder="Název ulice"></div>
+          <div class="field"><label>Č.p.</label><input type="text" id="f-cp" placeholder="12"></div>
+          <div class="field"><label>Č.o.</label><input type="text" id="f-co" placeholder="5a"></div>
+        </div>
+        <div class="field"><label>Město *</label><input type="text" id="f-mesto" placeholder="Město / obec"></div>
+        <div class="field"><label>Upřesnění místa</label><input type="text" id="f-upresneni" placeholder="Byt č., patro, popis přístupu..."></div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px"><i class="ti ti-user" style="color:var(--teal)"></i> Pacient</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>Příjmení</label><input type="text" id="f-pac-prijmeni" placeholder="Příjmení"></div>
+          <div class="field"><label>Jméno</label><input type="text" id="f-pac-jmeno" placeholder="Jméno"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>Pohlaví</label>
+            <select id="f-pac-pohlavi">
+              <option value="">— nevybráno —</option>
+              <option>Muž</option>
+              <option>Žena</option>
+              <option>Neuvedeno</option>
+            </select>
+          </div>
+          <div class="field"><label>Věk</label><input type="text" id="f-pac-vek" placeholder="např. 65" inputmode="numeric"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px"><i class="ti ti-phone" style="color:var(--teal)"></i> Oznamovatel</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>Jméno / organizace</label><input type="text" id="f-oznam" placeholder="Příjmení, jméno"></div>
+          <div class="field"><label>Tel. číslo</label><input type="tel" id="f-oznam-tel" placeholder="+420 xxx xxx xxx" inputmode="tel"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px"><i class="ti ti-shield-check" style="color:var(--teal)"></i> Součinnost IZS</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div class="sc-btn" id="sc-zzs" onclick="toggleSC('zzs')"><i class="ti ti-ambulance" style="font-size:17px;color:var(--teal)"></i><div><p style="font-size:12px;font-weight:600;color:var(--text)">ZZS</p><p style="font-size:10px;color:var(--text2)">Záchranná sl.</p></div></div>
+          <div class="sc-btn" id="sc-hzs" onclick="toggleSC('hzs')"><i class="ti ti-flame" style="font-size:17px;color:var(--red)"></i><div><p style="font-size:12px;font-weight:600;color:var(--text)">HZS</p><p style="font-size:10px;color:var(--text2)">Hasiči</p></div></div>
+          <div class="sc-btn" id="sc-pcr" onclick="toggleSC('pcr')"><i class="ti ti-badge" style="font-size:17px;color:var(--blue)"></i><div><p style="font-size:12px;font-weight:600;color:var(--text)">PČR/MP</p><p style="font-size:10px;color:var(--text2)">Policie</p></div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px"><i class="ti ti-users" style="color:var(--teal)"></i> Příjemci výzvy *</p>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Vyberte konkrétní uživatele</p>
+        <div id="user-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <button class="btn btn-danger" style="width:100%;justify-content:center;padding:14px;font-size:15px;border-radius:12px;margin-bottom:24px" onclick="sendAlert()"><i class="ti ti-send"></i> Odeslat tísňovou výzvu</button>
+    </div>
+    <div id="vtab-sent-content" style="display:none"><div id="sent-list"></div></div>
+  </div>
+  <!-- Avíza tab (dispatcher) -->
+  <div id="d-tab-aviza" style="display:none">
+    <div id="disp-aviza-list"></div>
+  </div>
+</div>
+
+<!-- ═══ CREW ═══ -->
+<div id="screen-crew" class="screen">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-top:8px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="crew-av" style="width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff"></div>
+      <div><p style="font-size:16px;font-weight:700;color:var(--text)" id="crew-name">Záchranář</p><p style="font-size:12px;color:var(--text2)" id="crew-role">ZZS</p></div>
+    </div>
+    <button class="btn btn-ghost" style="font-size:13px" onclick="doLogout()"><i class="ti ti-logout"></i> Odhlásit</button>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" id="ctab-vyzvy" onclick="crewTab('vyzvy')"><i class="ti ti-bell" style="font-size:13px"></i> Výzvy</button>
+    <button class="tab-btn" id="ctab-aviza" onclick="crewTab('aviza')"><i class="ti ti-stethoscope" style="font-size:13px"></i> Avíza <span id="avizo-badge-crew" style="display:none;background:var(--purple);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px"></span></button>
+  </div>
+  <div id="c-tab-vyzvy"><div id="crew-alerts" style="display:flex;flex-direction:column;gap:12px;padding-bottom:24px"></div></div>
+  <div id="c-tab-aviza" style="display:none">
+    <button class="btn btn-purple" style="width:100%;justify-content:center;margin-bottom:16px" onclick="openAvizoForm()"><i class="ti ti-stethoscope"></i> Odeslat nové avízo</button>
+    <div id="crew-aviza-list"></div>
+  </div>
+</div>
+
+<!-- ═══ DETAIL (výzva) ═══ -->
+<div id="screen-detail" class="screen">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-top:8px">
+    <button class="btn btn-ghost" style="padding:9px 13px" onclick="backToList()"><i class="ti ti-arrow-left"></i></button>
+    <p style="font-size:16px;font-weight:700;color:var(--text)">Detail výzvy</p>
+  </div>
+  <div id="detail-content" style="padding-bottom:24px"></div>
+</div>
+
+<!-- ═══ AVÍZO CHAT ═══ -->
+<div id="screen-avizo" class="screen">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-top:8px">
+    <button class="btn btn-ghost" style="padding:9px 13px" onclick="backFromAvizo()"><i class="ti ti-arrow-left"></i></button>
+    <div>
+      <p style="font-size:16px;font-weight:700;color:var(--text)">Avízo</p>
+      <p style="font-size:12px;color:var(--text2)" id="avizo-chat-subtitle"></p>
+    </div>
+    <div id="avizo-status-badge" style="margin-left:auto"></div>
+  </div>
+  <div id="avizo-chat-content" style="padding-bottom:24px"></div>
+</div>
+
+</div><!-- /app -->
+
+<!-- OVERLAY: Crew notifikace (výzva) -->
+<div class="overlay" id="overlay-notif">
+  <div class="modal slide-in" id="notif-modal" style="border:2.5px solid var(--red)">
+    <div class="pulse" id="notif-icon-wrap" style="width:68px;height:68px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+      <i id="notif-icon" class="ti ti-alert-triangle" style="font-size:32px;color:var(--red)"></i>
+    </div>
+    <p id="notif-title" style="font-size:20px;font-weight:800;color:var(--red);letter-spacing:.5px;margin-bottom:10px">TÍSŇOVÁ VÝZVA</p>
+    <p id="notif-klas" style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px"></p>
+    <p id="notif-addr" style="font-size:13px;color:var(--text2);margin-bottom:6px"></p>
+    <p id="notif-note" style="font-size:13px;color:var(--text);margin-bottom:20px;background:var(--orange-light);border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:8px 12px;line-height:1.5;text-align:left;display:none"></p>
+    <div id="notif-actions"></div>
+  </div>
+</div>
+
+<!-- OVERLAY: Notifikace avíza (dispatcher) -->
+<div class="overlay" id="overlay-avizo-notif">
+  <div class="modal slide-in" style="border:2.5px solid var(--purple)">
+    <div class="pulse" style="width:68px;height:68px;border-radius:50%;background:var(--purple-light);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+      <i class="ti ti-stethoscope" style="font-size:32px;color:var(--purple)"></i>
+    </div>
+    <p style="font-size:18px;font-weight:800;color:var(--purple);letter-spacing:.3px;margin-bottom:10px">NOVÉ AVÍZO</p>
+    <p id="an-from" style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px"></p>
+    <p id="an-diag" style="font-size:13px;color:var(--text2);margin-bottom:20px"></p>
+    <button class="btn btn-purple" style="width:100%;justify-content:center;margin-bottom:8px" onclick="openAvizoFromNotif()"><i class="ti ti-eye"></i> Zobrazit avízo</button>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:13px" onclick="closeModal('overlay-avizo-notif')">Později</button>
+  </div>
+</div>
+
+<!-- OVERLAY: Doplnění výzvy -->
+<div class="overlay" id="overlay-edit">
+  <div class="modal slide-in modal-left">
+    <p style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px">Doplnit výzvu</p>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Text bude přidán jako poznámka a příjemci obdrží notifikaci</p>
+    <div class="field"><label>Doplňující informace *</label><textarea id="edit-pozn" placeholder="Nové informace..."></textarea></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal('overlay-edit')">Zrušit</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="submitEdit()"><i class="ti ti-send"></i> Odeslat</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: Storno -->
+<div class="overlay" id="overlay-storno">
+  <div class="modal slide-in" style="border:2px solid var(--red)">
+    <div style="width:56px;height:56px;background:var(--red-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><i class="ti ti-x" style="font-size:26px;color:var(--red)"></i></div>
+    <p style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px">Stornovat výzvu?</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Všem příjemcům bude odeslána notifikace o zrušení.</p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal('overlay-storno')">Zpět</button>
+      <button class="btn btn-danger" style="flex:1;justify-content:center" onclick="submitStorno()"><i class="ti ti-x"></i> Stornovat</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: Ukončení události -->
+<div class="overlay" id="overlay-ukoncit">
+  <div class="modal slide-in">
+    <div style="width:56px;height:56px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><i class="ti ti-circle-check" style="font-size:26px;color:var(--green)"></i></div>
+    <p style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px">Ukončit událost?</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Potvrzením označíte výzvu jako vyřízenou. Nevratná akce.</p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal('overlay-ukoncit')">Zpět</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="submitUkoncit()"><i class="ti ti-check"></i> Potvrdit ukončení</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: Formulář avíza (crew) -->
+<div class="overlay" id="overlay-avizo-form">
+  <div class="modal slide-in modal-left" style="max-height:90vh;overflow-y:auto;border:2px solid var(--purple)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-stethoscope" style="font-size:20px;color:#fff"></i></div>
+      <div><p style="font-size:16px;font-weight:700;color:var(--text)">Odeslat avízo</p><p style="font-size:12px;color:var(--text2)">Předávací zpráva do ZZ</p></div>
+    </div>
+    <div style="background:var(--purple-light);border-radius:10px;padding:10px 14px;margin-bottom:14px">
+      <p style="font-size:12px;color:var(--purple);font-weight:600">Avízo bude odesláno dispečerovi. Po potvrzení příjmu vznikne chat pro komunikaci se ZZ.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label>Příjmení pacienta *</label><input type="text" id="av-prijmeni" placeholder="Příjmení"></div>
+      <div class="field"><label>Jméno pacienta *</label><input type="text" id="av-jmeno" placeholder="Jméno"></div>
+    </div>
+    <div class="field"><label>Rodné číslo</label><input type="text" id="av-rc" placeholder="000000/0000"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label>Pojišťovna</label>
+        <select id="av-pojistovna">
+          <option value="">— vyberte —</option>
+          <option>111 – VZP</option><option>201 – VoZP</option><option>205 – ČPZP</option>
+          <option>207 – OZP</option><option>209 – ZPŠ</option><option>211 – ZPMV</option><option>213 – RBP</option>
+        </select>
+      </div>
+      <div class="field"><label>Věk / pohlaví</label><input type="text" id="av-vek" placeholder="např. 65 let, muž"></div>
+    </div>
+    <div class="field"><label>Pracovní diagnóza *</label><input type="text" id="av-diag" placeholder="např. STEMI, CMP, polytrauma DN..."></div>
+    <div class="field"><label>Stav pacienta</label><textarea id="av-stav" placeholder="GCS, TK, SpO2, HR, dýchání, vědomí..." style="min-height:56px"></textarea></div>
+    <div class="field"><label>Směřování (ZZ) *</label><input type="text" id="av-smer" placeholder="např. FN Brno – kardiologie, traumacentrum..."></div>
+    <div class="field"><label>ETA (odhadovaný příjezd)</label><input type="text" id="av-eta" placeholder="např. 10–15 min"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal('overlay-avizo-form')">Zrušit</button>
+      <button class="btn btn-purple" style="flex:1;justify-content:center" onclick="submitAvizo()"><i class="ti ti-send"></i> Odeslat avízo</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: Odpověď ZZ (dispatcher) -->
+<div class="overlay" id="overlay-zz-reply">
+  <div class="modal slide-in modal-left" style="border:2px solid var(--teal)">
+    <p style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px">Odpověď zdravotnického zařízení</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="zzr-prijima" class="btn" onclick="setZZReply('prijima')" style="flex:1;justify-content:center;font-size:13px;border:1.5px solid var(--border2)"><i class="ti ti-circle-check"></i> Přijímá</button>
+      <button id="zzr-odmita" class="btn" onclick="setZZReply('odmita')" style="flex:1;justify-content:center;font-size:13px;border:1.5px solid var(--border2)"><i class="ti ti-circle-x"></i> Odmítá</button>
+      <button id="zzr-podminka" class="btn" onclick="setZZReply('podminka')" style="flex:1;justify-content:center;font-size:13px;border:1.5px solid var(--border2)"><i class="ti ti-circle-dot"></i> S podmínkou</button>
+    </div>
+    <div class="field"><label>Zpráva pro posádku (nepovinné)</label><textarea id="zzr-zprava" placeholder="Přijat na odd. XY, kontaktujte lék. XY..."></textarea></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal('overlay-zz-reply')">Zrušit</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="submitZZReply()"><i class="ti ti-send"></i> Odeslat odpověď</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ SaazMedConfig – inline ═══ */
+/**
+ * SaazMed – Centrální konfigurace
+ * Vygenerováno: 12. 5. 2026 13:21:05
+ */
+window.SaazMedConfig = {
+    users: [
+        {
+            "login": "dispecer",
+            "password": "disp2024",
+            "name": "DISPEČER Operační",
+            "isAdmin": false,
+            "role": "dispecer"
+        },
+        {
+            "login": "svol",
+            "password": "svol",
+            "name": "ŠVOLBA Jakub",
+            "isAdmin": true,
+            "role": "posadka"
+        },
+        {
+            "login": "maca",
+            "password": "maca",
+            "name": "MACH Jan",
+            "isAdmin": false,
+            "role": "posadka"
+        },
+        {
+            "name": "KOLAJA Milan",
+            "login": "kolm",
+            "password": "kolm",
+            "isAdmin": false,
+            "role": "posadka"
+        },
+        {
+            "name": "JURNEČKA Slavomil",
+            "login": "jurs",
+            "password": "jurs",
+            "isAdmin": false,
+            "role": "posadka"
+        },
+        {
+            "name": "DLOUHÝ Stanislav",
+            "login": "dlos",
+            "password": "dlos",
+            "isAdmin": true,
+            "role": "posadka"
+        },
+        {
+            "name": "HRBKOVÁ Hana",
+            "login": "hrbh",
+            "password": "hrbh",
+            "isAdmin": false,
+            "role": "posadka"
+        },
+        {
+            "name": "FÁRA Ladislav",
+            "login": "farl",
+            "password": "farl",
+            "isAdmin": false,
+            "role": "posadka"
+        },
+        {
+            "name": "LÉKAŘ Jiný",
+            "login": "jinl",
+            "password": "jinl",
+            "isAdmin": false,
+            "role": "posadka"
+        },
+        {
+            "name": "NĚMCOVÁ Martina",
+            "login": "nema",
+            "password": "nema",
+            "isAdmin": false,
+            "role": "posadka"
+        }
+    ],
+    personnel: [
+        {
+            "titulp": "Ing. Bc.",
+            "jmeno": "Jan",
+            "prijmeni": "MACH",
+            "titulz": "",
+            "role": [
+                "nlzp",
+                "ridic"
+            ]
+        },
+        {
+            "titulp": "Bc.",
+            "jmeno": "Slavomil",
+            "prijmeni": "JURNEČKA",
+            "titulz": "DiS.",
+            "role": [
+                "nlzp",
+                "ridic"
+            ]
+        },
+        {
+            "titulp": "",
+            "jmeno": "Ladislav",
+            "prijmeni": "FÁRA",
+            "titulz": "",
+            "role": [
+                "ridic"
+            ]
+        },
+        {
+            "titulp": "",
+            "jmeno": "Milan",
+            "prijmeni": "KOLAJA",
+            "titulz": "",
+            "role": [
+                "ridic",
+                "nlzp"
+            ]
+        },
+        {
+            "titulp": "",
+            "jmeno": "Hana",
+            "prijmeni": "HRBKOVÁ",
+            "titulz": "DiS.",
+            "role": [
+                "nlzp"
+            ]
+        },
+        {
+            "titulp": "",
+            "jmeno": "Stanislav",
+            "prijmeni": "DLOUHÝ",
+            "titulz": "",
+            "role": [
+                "nlzp",
+                "ridic"
+            ]
+        },
+        {
+            "titulp": "Bc.",
+            "jmeno": "Jakub",
+            "prijmeni": "ŠVOLBA",
+            "titulz": "MBA",
+            "role": [
+                "nlzp",
+                "ridic"
+            ]
+        },
+        {
+            "titulp": "MUDr.",
+            "jmeno": "Jiný",
+            "prijmeni": "LÉKAŘ",
+            "titulz": "",
+            "role": [
+                "lekar"
+            ]
+        },
+        {
+            "titulp": "Bc.",
+            "jmeno": "Martina",
+            "prijmeni": "NĚMCOVÁ",
+            "titulz": "",
+            "role": [
+                "nlzp"
+            ]
+        }
+    ],
+    vehicles: [
+        {
+            "volacka": "ZTC 911",
+            "rz": "8C3 5728"
+        },
+        {
+            "volacka": "ZTC 912",
+            "rz": "8C3 5785"
+        },
+        {
+            "volacka": "ZTC 913",
+            "rz": "5C7 4738"
+        },
+        {
+            "volacka": "X",
+            "rz": "jiné vozidlo"
+        }
+    ],
+    pojistovny: [
+        {
+            "kod": "111",
+            "nazev": "VZP"
+        },
+        {
+            "kod": "201",
+            "nazev": "VoZP"
+        },
+        {
+            "kod": "205",
+            "nazev": "ČPZP"
+        },
+        {
+            "kod": "207",
+            "nazev": "OZP"
+        },
+        {
+            "kod": "211",
+            "nazev": "ZPMV"
+        },
+        {
+            "kod": "999",
+            "nazev": "Cizinec / v řešení"
+        },
+        {
+            "kod": "900",
+            "nazev": "Samoplátce"
+        }
+    ],
+    pohlavi: [
+        "Muž",
+        "Žena",
+        "Neuvedeno"
+    ],
+    statniPrislusnost: [
+        "Afghánistán",
+        "Albánie",
+        "Alžírsko",
+        "Andorra",
+        "Angola",
+        "Antigua a Barbuda",
+        "Argentina",
+        "Arménie",
+        "Austrálie",
+        "Ázerbájdžán",
+        "Bahamy",
+        "Bahrajn",
+        "Bangladéš",
+        "Barbados",
+        "Belgie",
+        "Belize",
+        "Benin",
+        "Bhútán",
+        "Bělorusko",
+        "Bolívie",
+        "Bosna a Hercegovina",
+        "Botswana",
+        "Brazílie",
+        "Brunej",
+        "Bulharsko",
+        "Burkina Faso",
+        "Burundi",
+        "Čad",
+        "Černá Hora",
+        "Česká republika",
+        "Čína",
+        "Dánsko",
+        "Demokratická republika Kongo",
+        "Dominika",
+        "Dominikánská republika",
+        "Džibuti",
+        "Egypt",
+        "Ekvádor",
+        "Eritrea",
+        "Estonsko",
+        "Etiopie",
+        "Fidži",
+        "Filipíny",
+        "Finsko",
+        "Francie",
+        "Gabon",
+        "Gambie",
+        "Ghana",
+        "Grenada",
+        "Gruzie",
+        "Guatemala",
+        "Guinea",
+        "Guinea-Bissau",
+        "Guyana",
+        "Haiti",
+        "Honduras",
+        "Chile",
+        "Chorvatsko",
+        "Indie",
+        "Indonésie",
+        "Irák",
+        "Írán",
+        "Irsko",
+        "Island",
+        "Izrael",
+        "Itálie",
+        "Jamajka",
+        "Japonsko",
+        "Jemen",
+        "Jihoafrická republika",
+        "Jižní Korea",
+        "Jižní Súdán",
+        "Jordánsko",
+        "Kambodža",
+        "Kamerun",
+        "Kanada",
+        "Kapverdy",
+        "Katar",
+        "Kazachstán",
+        "Keňa",
+        "Kiribati",
+        "Kolumbie",
+        "Komory",
+        "Kongo",
+        "Kosovo",
+        "Kostarika",
+        "Kuba",
+        "Kuvajt",
+        "Kypr",
+        "Kyrgyzstán",
+        "Laos",
+        "Lesotho",
+        "Libanon",
+        "Libérie",
+        "Libye",
+        "Lichtenštejnsko",
+        "Litva",
+        "Lotyšsko",
+        "Lucembursko",
+        "Madagaskar",
+        "Maďarsko",
+        "Malajsie",
+        "Malawi",
+        "Maledivy",
+        "Mali",
+        "Malta",
+        "Maroko",
+        "Marshallovy ostrovy",
+        "Mauritánie",
+        "Mauricius",
+        "Mexiko",
+        "Mikronésie",
+        "Moldavsko",
+        "Monako",
+        "Mongolsko",
+        "Mosambik",
+        "Myanmar",
+        "Namibie",
+        "Nauru",
+        "Německo",
+        "Nepál",
+        "Niger",
+        "Nigérie",
+        "Nikaragua",
+        "Norsko",
+        "Nový Zéland",
+        "Omán",
+        "Pákistán",
+        "Palau",
+        "Panama",
+        "Papua Nová Guinea",
+        "Paraguay",
+        "Peru",
+        "Pobřeží slonoviny",
+        "Polsko",
+        "Portugalsko",
+        "Rakousko",
+        "Rovníková Guinea",
+        "Rumunsko",
+        "Rusko",
+        "Rwanda",
+        "Řecko",
+        "Salvador",
+        "Samoa",
+        "San Marino",
+        "Saúdská Arábie",
+        "Senegal",
+        "Severní Korea",
+        "Severní Makedonie",
+        "Seychely",
+        "Sierra Leone",
+        "Singapur",
+        "Slovenská republika",
+        "Slovinsko",
+        "Somálsko",
+        "Spojené arabské emiráty",
+        "Spojené státy americké",
+        "Srbsko",
+        "Srí Lanka",
+        "Středoafrická republika",
+        "Súdán",
+        "Surinam",
+        "Svazijsko",
+        "Svatá Lucie",
+        "Svatý Kryštof a Nevis",
+        "Svatý Tomáš a Princův ostrov",
+        "Svatý Vincenc a Grenadiny",
+        "Sýrie",
+        "Šalomounovy ostrovy",
+        "Španělsko",
+        "Švédsko",
+        "Švýcarsko",
+        "Tádžikistán",
+        "Tanzanie",
+        "Thajsko",
+        "Timor-Leste",
+        "Togo",
+        "Tonga",
+        "Trinidad a Tobago",
+        "Tunisko",
+        "Turecko",
+        "Turkmenistán",
+        "Tuvalu",
+        "Uganda",
+        "Ukrajina",
+        "Uruguay",
+        "Uzbekistán",
+        "Vanuatu",
+        "Vatikán",
+        "Velká Británie",
+        "Venezuela",
+        "Vietnam",
+        "Zambie",
+        "Zimbabwe",
+        "Neuvedeno"
+    ],
+    zpusobyUkonceni: [
+        "Předán do ZZ",
+        "Předán ZZS",
+        "Ponechán na místě",
+        "Marný výjezd",
+        "Nerealizovaný výjezd",
+        "Odmítl ošetření/transport",
+        "Zemřel před příjezdem ZZS",
+        "Zemřel po KPR",
+        "Ukončeno dispečinkem",
+        "Předán PČR/MP"
+    ],
+    zarizeni: [
+        "Nemocnice Žatec",
+        "Nemocnice Chomutov",
+        "ÚVN Praha",
+        "Karlovarská krajská nemocnice",
+        "ZZS Ústeckého kraje",
+        "ZZS Středočeského kraje",
+        "Policie ČR",
+        "Městská policie",
+        "X – jiné"
+    ],
+    soucinnost: [
+        "ZZS Ústeckého kraje",
+        "ZZS jiná",
+        "LZS",
+        "PČR/MP",
+        "Ostatní složky"
+    ],
+    zzsSledovani: [
+        "Domino transport",
+        "Kolaps sestry / záchranáře",
+        "Napadení při zásahu",
+        "Použití fyzických omezovacích prostředků"
+    ],
+    urgence: [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+    ],
+        oddeleni: [
+        "Chirurgie",
+        "Interna",
+        "Iktové centrum",
+        "Kardiologie",
+        "LZS",
+        "LZS jiná",
+        "Neurologie",
+        "RLP",
+        "RV",
+        "RZP",
+        "Traumacentrum",
+        "Urologie",
+        "X"
+    ],
+    cennosti: [
+        "Záznam o výjezdu",
+        "EKG záznam",
+        "Občanský průkaz",
+        "Průkaz pojištěnce",
+        "Osobní taška / batoh",
+        "Hůl / berle / chodítko",
+        "Mobilní telefon",
+        "Hotovost",
+        "Klíče",
+        "Cestovní pas"
+    ],
+    terapie: {
+        "Výkony": [
+            "Kanylace periferní žíly včetně infuze",
+            "Infuze u dospělého nebo dítěte nad 10 let",
+            "Měření a monitorace TK",
+            "Pulzní oxymetrie",
+            "Ošetření a převaz rány",
+            "Neodkladná kardiopulmonální resuscitace",
+            "Zajištění DC supraglotickými pomůckami",
+            "Podání kyslíku",
+            "Injekce i.m./s.c./i.d.",
+            "EKG - záznam a monitorace",
+            "Stanovení glykémie",
+            "Analgosedace intravenózní"
+        ],
+        "Léky": [
+            "inf. Ringerfundin 500ml",
+            "inf. NaCl 0,9% 10ml",
+            "inf. NaCl 0,9% 100ml",
+            "inf. Aqua pro inj. 10ml",
+            "Glukóza 40% 10ml",
+            "inf. Plasmalyte 500ml",
+            "inf. Hartmannův roztok",
+            "inf. NaCl 0,9% 250ml",
+            "Adrenalin 1mg/1ml",
+            "Torecan 6,5mg/1ml",
+            "Dolmina 75mg/3ml",
+            "Magnesium Sulfát 10%",
+            "Magnesium Sulfát 20%",
+            "Peroxid vodíku 3%",
+            "Betadine sol."
+        ],
+        "Materiál": [
+            "Kanyla G20 - RŮŽOVÁ",
+            "Kanyla G18 - ZELENÁ",
+            "Kanyla G16 - ŠEDÁ",
+            "LMA pro děti",
+            "Kanyla G14 - ORANŽOVÁ",
+            "Kanyla G22 - MODRÁ",
+            "Kanyla G24 - ŽLUTÁ",
+            "LMA pro dosp.",
+            "Kyslíková maska pro dosp. - inhalační",
+            "Kyslíková maska pro dosp. - nebulizační",
+            "Kyslíková maska pro dosp. - s rezervoárem",
+            "Kyslíková maska pro děti - inhalační",
+            "Kyslíková maska pro děti - nebulizační",
+            "Kyslíková maska pro děti - s rezervoárem"
+        ],
+        "Přístroje": [
+            "Monitor ZOLL",
+            "Monitor",
+            "Defibrilátor Corpuls"
+        ],
+        "Pomůcky": [
+            "Nosítka",
+            "Schodolez",
+            "Vakuová matrace",
+            "Deka jednorázová",
+            "Izotermická fólie"
+        ]
+    },
+    org: {
+        "name": "Záchranáři Žatec, z.s.",
+        "street": "Studentská 1145",
+        "city": "438 01 Žatec",
+        "ic": "26651815"
+    },
+};
+window.SaazMedDB = {
+    personnel: window.SaazMedConfig.personnel,
+    vehicles:  window.SaazMedConfig.vehicles,
+};
+
+</script>
+
+<script>
+/* ═══════════════ DATA ═══════════════ */
+/* ═══════════════ UŽIVATELÉ ZE SAAZMEDCONFIG ═══════════════ */
+// Paleta barev pro avatary posádky
+const CREW_COLORS = ['#0D7C7C','#185FA5','#9E3B82','#D85A30','#3B6D11','#533AB7','#A0522D','#2E7D32'];
+
+function buildUsers() {
+  const cfg = window.SaazMedConfig && window.SaazMedConfig.users;
+  if (!cfg) {
+    console.error('SaazText: SaazMedConfig není dostupný. Ujisti se, že saazmed-config.js je načten před SaazTextem.');
+    return {};
+  }
+  const result = {};
+  let colorIdx = 0;
+  cfg.forEach(u => {
+    const isDisp = u.role === 'dispecer';
+    const initials = u.name.split(/\s+/).map(w => w[0]).join('').substring(0,2).toUpperCase();
+    // Funkce z personnel záznamu
+    const pers = window.SaazMedConfig.personnel
+      ? window.SaazMedConfig.personnel.find(p => p.prijmeni === u.name.split(' ')[0])
+      : null;
+    let funkce = isDisp ? 'Dispečer' : (pers ? pers.role.join(', ').replace('nlzp','NLZP').replace('ridic','Řidič').replace('lekar','Lékař') : 'Posádka');
+    result[u.login] = {
+      pass: u.password,
+      role: isDisp ? 'dispatcher' : 'crew',
+      display: u.name,
+      funkce,
+      color: isDisp ? '#533AB7' : CREW_COLORS[colorIdx++ % CREW_COLORS.length],
+      initials,
+      pending: []
+    };
+  });
+  return result;
+}
+
+const USERS = buildUsers();
+
+function getDispUser() {
+  // Najde klíč dispečera v USERS (může být 'dispecer' nebo jiný)
+  const key = Object.keys(USERS).find(k => USERS[k].role === 'dispatcher');
+  return key ? USERS[key] : null;
+}
+function getDispKey() {
+  return Object.keys(USERS).find(k => USERS[k].role === 'dispatcher') || 'dispecer';
+}
+
+
+
+/* ═══════════════ SSO – automatické přihlášení ze SaazMedu ═══════════════ */
+// SaazMed uloží při loginu: saazmed_sso = { login, ts }
+// SaazText to přečte a automaticky přihlásí uživatele
+function checkSSO() {
+  try {
+    const raw = localStorage.getItem('saazmed_sso');
+    if (!raw) return false;
+    const sso = JSON.parse(raw);
+    // Token platí 8 hodin
+    if (!sso.login || Date.now() - sso.ts > 8 * 3600 * 1000) {
+      localStorage.removeItem('saazmed_sso');
+      return false;
+    }
+    const u = USERS[sso.login];
+    if (!u) return false;
+    CU = { id: sso.login, ...u };
+    if (CU.role === 'dispatcher') { initDisp(); requestAnimationFrame(() => show('dispatcher')); }
+    else { initCrew(); requestAnimationFrame(() => show('crew')); }
+    return true;
+  } catch(e) { return false; }
+}
+const KLAS = [
+  {id:'ALERGIE',label:'Alergie',icon:'ti-alert-circle',color:'var(--orange)'},
+  {id:'BOLESTI',label:'Bolesti',icon:'ti-mood-sad',color:'var(--orange)'},
+  {id:'DN',label:'Dopravní nehoda',icon:'ti-car-crash',color:'var(--red)'},
+  {id:'DUSNOST',label:'Dušnost',icon:'ti-lungs',color:'var(--blue)'},
+  {id:'INTOX',label:'Intoxikace',icon:'ti-flask',color:'var(--purple)'},
+  {id:'KARDIO',label:'Kardiální obtíže',icon:'ti-heart-rate-monitor',color:'var(--red)'},
+  {id:'KRVACENI',label:'Krvácení',icon:'ti-droplet',color:'var(--red)'},
+  {id:'NEURO',label:'Neurologické obtíže',icon:'ti-brain',color:'var(--orange)'},
+  {id:'NZO',label:'Náhlá zástava oběhu',icon:'ti-heart-off',color:'var(--red)'},
+  {id:'POROD',label:'Porod',icon:'ti-baby-carriage',color:'var(--teal)'},
+  {id:'PSYCH',label:'Psychické obtíže',icon:'ti-mood-nervous',color:'var(--purple)'},
+  {id:'SLABOST',label:'Slabost',icon:'ti-user-exclamation',color:'var(--orange)'},
+  {id:'SOUCINNOST',label:'Součinnost IZS',icon:'ti-shield-check',color:'var(--teal)'},
+  {id:'TERMICKY',label:'Termický úraz',icon:'ti-flame',color:'var(--red)'},
+  {id:'URAZ',label:'Úraz',icon:'ti-first-aid-kit',color:'var(--orange)'},
+  {id:'VEDOMI',label:'Porucha vědomí',icon:'ti-eye-off',color:'var(--purple)'},
+  {id:'PREVOZ',label:'Převoz sek.',icon:'ti-ambulance',color:'var(--teal)'},
+  {id:'JINE',label:'Jiné',icon:'ti-dots-circle-horizontal',color:'var(--text2)'}
+];
+const SC_META = {
+  zzs:{label:'ZZS',icon:'ti-ambulance',cls:'on-zzs',badge:'badge-teal'},
+  hzs:{label:'HZS',icon:'ti-flame',cls:'on-hzs',badge:'badge-red'},
+  pcr:{label:'PČR/MP',icon:'ti-badge',cls:'on-pcr',badge:'badge-blue'}
+};
+
+let CU=null; // currentUser
+let selKlas=null,selUsers=[],selSC=[];
+// Persistence helpers
+function _stSave() {
+  try {
+    localStorage.setItem('st_alerts', JSON.stringify(alerts.map(a => ({...a, time: a.time instanceof Date ? a.time.toISOString() : a.time, log: a.log.map(l => ({...l, time: l.time instanceof Date ? l.time.toISOString() : l.time})), notes: (a.notes||[]).map(n => ({...n, time: n.time instanceof Date ? n.time.toISOString() : n.time}))}))));
+    localStorage.setItem('st_aviza', JSON.stringify(aviza.map(a => ({...a, time: a.time instanceof Date ? a.time.toISOString() : a.time, chat: (a.chat||[]).map(c => ({...c, time: c.time instanceof Date ? c.time.toISOString() : c.time}))}))));
+  } catch(e) {}
+}
+function _stLoad() {
+  try {
+    const ra = localStorage.getItem('st_alerts');
+    if (ra) alerts = JSON.parse(ra).map(a => ({...a, time: new Date(a.time), log: (a.log||[]).map(l => ({...l, time: new Date(l.time)})), notes: (a.notes||[]).map(n => ({...n, time: new Date(n.time)}))}));
+    const rv = localStorage.getItem('st_aviza');
+    if (rv) aviza = JSON.parse(rv).map(a => ({...a, time: new Date(a.time), chat: (a.chat||[]).map(c => ({...c, time: new Date(c.time)}))}));
+  } catch(e) { alerts=[]; aviza=[]; }
+}
+
+let alerts=[],aviza=[];
+_stLoad();
+let editingId=null,stornoId=null,ukoncitId=null;
+let pendingNotifId=null,pendingAvizoNotifId=null;
+let currentAvizoId=null,zzReplyDecision=null;
+let audioCtx=null,alarmTimer=null;
+
+/* ═══════════════ UTIL ═══════════════ */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function ts(d){return new Date(d).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});}
+function tsFull(d){return new Date(d).toLocaleString('cs-CZ');}
+function scBadges(sc){return(sc||[]).map(k=>`<span class="badge ${SC_META[k].badge}"><i class="ti ${SC_META[k].icon}" style="font-size:10px"></i>${SC_META[k].label}</span>`).join('');}
+function av(u,sz=34,r=8){return`<div style="width:${sz}px;height:${sz}px;border-radius:${r}px;background:${u.color};display:flex;align-items:center;justify-content:center;font-size:${Math.round(sz*.36)}px;font-weight:700;color:#fff;flex-shrink:0">${u.initials}</div>`;}
+
+/* ═══════════════ INIT ═══════════════ */
+// Naslouchej potvrzením ze SaazMedu
+const _smConfirmChannel = new BroadcastChannel('saazmed_dispatch');
+_smConfirmChannel.onmessage = function(evt) {
+  if (!evt.data) return;
+
+  if (evt.data.type === 'vyzva_potvrzena') {
+    const { alertId, login } = evt.data;
+    const a = alerts.find(x => x.id === alertId);
+    if (!a) return;
+    if (!a.confirmed.includes(login)) {
+      a.confirmed.push(login);
+      a.log.push({time:new Date(),type:'potvrzeno',text:(USERS[login]?.display||login)+' potvrdil(a) výzvu (SaazMed)'});
+      _stSave();
+    }
+    renderSent();
+    renderCrewAlerts();
+  }
+
+  // Chat zpráva ze SM (posádka → dispečer)
+  if (evt.data.type === 'avizo_chat') {
+    const { avizoId, author, text, role, fromST } = evt.data;
+    if (fromST) return; // ignoruj vlastní echo ze ST
+    if (!CU) return;
+    const a = aviza.find(x => x.id === avizoId);
+    if (!a) return;
+    // Přidej zprávu do chatu avíza
+    a.chat.push({author, role: role||'crew', type:'msg', time:new Date(), text});
+    _stSave();
+    // Pokud je dispečer přihlášen a má otevřený tento chat, refreshni
+    if (CU.role === 'dispatcher') {
+      if (currentAvizoId === avizoId) renderAvizoChat();
+      else {
+        // Notifikuj dispečera
+        const _d = getDispUser();
+        if (_d) _d.pending.push({avizoId, type:'avizo-chat'});
+        updateAvizoBadge();
+        playAvizoAlarm();
+      }
+      renderDispAviza();
+    }
+    // Posádka dostane echo do svého chatu v ST
+    if (CU.role === 'crew' && currentAvizoId === avizoId) renderAvizoChat();
+  }
+  if (evt.data.type === 'avizo_sm') {
+    const p = evt.data.payload;
+    // Najdi odesílatele — pokud nenajdeme, použij prvního crew usera
+    const fromLogin = Object.keys(USERS).find(k => USERS[k].display === p.zdravotnik)
+                   || Object.keys(USERS).find(k => USERS[k].role === 'crew')
+                   || Object.keys(USERS)[0];
+    if (!fromLogin || !USERS[fromLogin]) { console.warn('ST avizo_sm: fromLogin not found'); return; }
+    const avizo = {
+      id: p.id || Date.now(),
+      from: fromLogin,
+      time: new Date(),
+      status: 'pending',
+      patient: {
+        prijmeni: p.pacient?.prijmeni||'',
+        jmeno:    p.pacient?.jmeno||'',
+        rc: '',
+        pojistovna: p.pacient?.pojistovna||'',
+        vek: (p.pacient?.pohlavi?p.pacient.pohlavi+', ':'') + (p.pacient?.vek ? p.pacient.vek+' let' : '')
+      },
+      diag: p.diagnoza||'(neuvedeno)',
+      stav: [p.stav?.vedomi, p.stav?.dychani, p.stav?.obeh].filter(Boolean).join(', '),
+      smer: [p.ciloveZZ, p.odbornost].filter(Boolean).join(' – '),
+      eta:  p.eta||'',
+      chat: [{author:'Systém',role:'system',type:'system',time:new Date(),
+              text:`Avízo odesláno ze SaazMedu – ${p.zdravotnik||'posádka'} (${p.vozidlo||'—'})`}]
+    };
+    if (p.poznamka) avizo.chat.push({author:p.zdravotnik||'posádka',role:'crew',type:'msg',time:new Date(),text:p.poznamka});
+    aviza.unshift(avizo);
+    _stSave();
+    // Vždy přidej do dispatcher pending
+    const _dispAvU = getDispUser();
+    if (_dispAvU) _dispAvU.pending.push({avizoId:avizo.id, type:'avizo-nova'});
+    // Pokud je dispečer přihlášen — zobraz notifikaci hned
+    if (CU && CU.role === 'dispatcher') {
+      renderDispAviza();
+      updateAvizoBadge();
+      playAvizoAlarm();
+      pendingAvizoNotifId = avizo.id;
+      const u = USERS[fromLogin];
+      document.getElementById('an-from').textContent = (u?.display||p.zdravotnik||'Posádka') + ' (' + (u?.funkce||'ZZS') + ')';
+      document.getElementById('an-diag').textContent = avizo.diag + (avizo.smer ? ' → ' + avizo.smer : '');
+      openModal('overlay-avizo-notif');
+    }
+  }
+};
+
+
+
+document.getElementById('demo-list').innerHTML=Object.entries(USERS).map(([id,u])=>
+  `<p style="font-size:11px;color:var(--text3)"><code style="background:var(--surface3);padding:1px 5px;border-radius:4px;font-size:11px">${id}</code> — ${u.display} <span style="color:${u.role==='dispatcher'?'var(--purple)':'var(--teal)'}">(${u.role==='dispatcher'?'Dispečer':'Posádka'})</span></p>`
+).join('');
+
+/* ═══════════════ AUTH ═══════════════ */
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim().toLowerCase();
+  const p=document.getElementById('login-pass').value;
+  if(USERS[u]&&USERS[u].pass===p){
+    CU={id:u,...USERS[u]};
+    document.getElementById('login-err').style.display='none';
+    if(CU.role==='dispatcher'){initDisp();show('dispatcher');}
+    else{initCrew();show('crew');}
+  } else document.getElementById('login-err').style.display='block';
+}
+function doLogout(){
+  stopAlarm();
+  document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
+  CU=null;selKlas=null;selUsers=[];selSC=[];
+  editingId=stornoId=ukoncitId=pendingNotifId=pendingAvizoNotifId=currentAvizoId=zzReplyDecision=null;
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  show('login');
+}
+
+/* ═══════════════ DISPATCHER INIT ═══════════════ */
+function initDisp(){
+  const u=CU;
+  document.getElementById('disp-av').style.background=u.color;
+  document.getElementById('disp-av').textContent=u.initials;
+  document.getElementById('disp-name').textContent=u.display;
+  // Klasifikace grid
+  document.getElementById('klas-grid').innerHTML=KLAS.map(k=>`
+    <div class="klas-btn" data-id="${k.id}" onclick="selK('${k.id}')"
+      style="display:flex;align-items:center;gap:9px;padding:9px 12px;border:1.5px solid var(--border2);border-radius:10px;cursor:pointer;transition:all .15s;background:var(--surface)">
+      <i class="ti ${k.icon}" style="font-size:17px;color:${k.color}"></i>
+      <span style="font-size:12px;color:var(--text);font-weight:500">${k.label}</span>
+    </div>`).join('');
+  // User list
+  document.getElementById('user-list').innerHTML=Object.entries(USERS).filter(([,v])=>v.role==='crew').map(([id,u])=>`
+    <div class="user-chip" id="chip-${id}" onclick="toggleUser('${id}')">
+      ${av(u)}
+      <div style="flex:1"><p style="font-size:13px;font-weight:600;color:var(--text)">${u.display}</p><p style="font-size:11px;color:var(--text2)">${u.funkce}</p></div>
+      <i class="ti ti-circle" id="chipck-${id}" style="font-size:18px;color:var(--text3)"></i>
+    </div>`).join('');
+  renderSent();renderDispAviza();updateAvizoBadge();
+  // Zkontroluj pending notifikace po inicializaci
+  setTimeout(checkPendingAvizaNotif, 500);
+}
+
+function selK(id){
+  selKlas=id;
+  document.querySelectorAll('.klas-btn').forEach(b=>{
+    b.style.borderColor=b.dataset.id===id?'var(--teal)':'var(--border2)';
+    b.style.background=b.dataset.id===id?'var(--teal-light)':'var(--surface)';
+  });
+}
+function toggleUser(id){
+  selUsers=selUsers.includes(id)?selUsers.filter(u=>u!==id):[...selUsers,id];
+  document.getElementById('chip-'+id).className='user-chip'+(selUsers.includes(id)?' selected':'');
+  const ck=document.getElementById('chipck-'+id);
+  ck.className=selUsers.includes(id)?'ti ti-circle-check':'ti ti-circle';
+  ck.style.color=selUsers.includes(id)?'var(--teal)':'var(--text3)';
+}
+function toggleSC(key){
+  selSC=selSC.includes(key)?selSC.filter(k=>k!==key):[...selSC,key];
+  document.getElementById('sc-'+key).className='sc-btn'+(selSC.includes(key)?' '+SC_META[key].cls:'');
+}
+
+/* ═══════════════ DISPATCHER TABS ═══════════════ */
+function dispTab(t){
+  document.getElementById('d-tab-vyzvy').style.display=t==='vyzvy'?'block':'none';
+  document.getElementById('d-tab-aviza').style.display=t==='aviza'?'block':'none';
+  ['vyzvy','aviza'].forEach(tab=>{
+    document.getElementById('dtab-'+tab).className='tab-btn'+(tab===t?' active':'');
+  });
+  if(t==='aviza'){renderDispAviza();updateAvizoBadge();}
+}
+function vyzvaTab(t){
+  document.getElementById('vtab-new-content').style.display=t==='new'?'block':'none';
+  document.getElementById('vtab-sent-content').style.display=t==='sent'?'block':'none';
+  document.getElementById('vtab-new').style.cssText=t==='new'?'background:var(--teal);color:#fff;font-size:13px':'background:transparent;color:var(--text2);border:1.5px solid var(--border2);font-size:13px';
+  document.getElementById('vtab-sent').style.cssText=t==='sent'?'background:var(--teal);color:#fff;font-size:13px':'background:transparent;color:var(--text2);border:1.5px solid var(--border2);font-size:13px';
+  if(t==='sent') renderSent();
+}
+
+/* ═══════════════ SEND ALERT ═══════════════ */
+function sendAlert(){
+  if(!selKlas){alert('Vyberte klasifikaci');return;}
+  const ulice=document.getElementById('f-ulice').value.trim();
+  const cp=document.getElementById('f-cp').value.trim();
+  const mesto=document.getElementById('f-mesto').value.trim();
+  if(!ulice||!mesto){alert('Zadejte ulici a město');return;}
+  if(!selUsers.length){alert('Vyberte alespoň jednoho příjemce');return;}
+  const kl=KLAS.find(k=>k.id===selKlas);
+  const pozn=document.getElementById('f-pozn').value.trim();
+  const adresa=[ulice,cp,mesto].filter(Boolean).join(' ');
+  const prijmeni = document.getElementById('f-pac-prijmeni').value.trim();
+  const jmeno    = document.getElementById('f-pac-jmeno').value.trim();
+  const pohlavi  = document.getElementById('f-pac-pohlavi').value;
+  const vek      = document.getElementById('f-pac-vek').value.trim();
+  const pacient  = [prijmeni, jmeno].filter(Boolean).join(' ');
+  const a={
+    id:Date.now(),klasifikace:kl,
+    ulice,cp,co:document.getElementById('f-co').value.trim(),mesto,adresa,
+    upresneni:document.getElementById('f-upresneni').value.trim(),
+    pacient, prijmeni, jmeno, pohlavi, vek,
+    oznam:document.getElementById('f-oznam').value.trim(),
+    oznamTel:document.getElementById('f-oznam-tel').value.trim(),
+    součinnost:[...selSC],recipients:[...selUsers],
+    time:new Date(),confirmed:[],ukoncil:[],status:'active',
+    notes:pozn?[{time:new Date(),author:'Dispečer',text:pozn}]:[],
+    log:[{time:new Date(),type:'odeslano',text:'Výzva odeslána – '+CU.display}]
+  };
+  alerts.unshift(a);
+  _stSave();
+  a.recipients.forEach(uid=>USERS[uid].pending.push({alertId:a.id,type:'nova'}));
+  // Odešli do SaazMedu přes BroadcastChannel
+  try {
+    const ch = new BroadcastChannel('saazmed_dispatch');
+    ch.postMessage({
+      type:'nova_vyzva',
+      payload:{
+        id:a.id,
+        klasifikace:kl.id,
+        klasifikaceLabel:kl.label,
+        ulice:a.ulice, cp:a.cp, co:a.co, mesto:a.mesto, adresa:a.adresa,
+        upresneni:a.upresneni,
+        pacient:a.pacient, prijmeni:a.prijmeni, jmeno:a.jmeno, pohlavi:a.pohlavi, vek:a.vek,
+        oznam:a.oznam, oznamTel:a.oznamTel,
+        poznamka:pozn,
+        casVyzvy:a.time,
+        recipients:a.recipients
+      }
+    });
+    ch.close();
+  } catch(e){ console.warn('BroadcastChannel error:',e); }
+  ['f-ulice','f-cp','f-co','f-mesto','f-upresneni','f-pac-prijmeni','f-pac-jmeno','f-pac-vek','f-oznam','f-oznam-tel','f-pozn'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const poh=document.getElementById('f-pac-pohlavi');if(poh)poh.value='';
+  selKlas=null;selUsers=[];selSC=[];
+  document.querySelectorAll('.klas-btn').forEach(b=>{b.style.borderColor='var(--border2)';b.style.background='var(--surface)';});
+  document.querySelectorAll('.user-chip').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('[id^=chipck-]').forEach(i=>{i.className='ti ti-circle';i.style.color='var(--text3)';});
+  ['zzs','hzs','pcr'].forEach(k=>document.getElementById('sc-'+k).className='sc-btn');
+  vyzvaTab('sent');
+}
+
+/* ═══════════════ RENDER SENT ═══════════════ */
+function capitalFirst(s){ return s?s.charAt(0).toUpperCase()+s.slice(1).toLowerCase():s; }
+function renderSent(){
+  const sl=document.getElementById('sent-list');
+  if(!alerts.length){sl.innerHTML='<div class="card" style="text-align:center;padding:40px"><i class="ti ti-list" style="font-size:36px;color:var(--text3)"></i><p style="color:var(--text2);margin-top:12px">Žádné odeslané výzvy</p></div>';return;}
+  sl.innerHTML=alerts.map(a=>{
+    const conf=a.confirmed.length,tot=a.recipients.length;
+    const isAct=a.status==='active';
+    const statusBadge=a.status==='storno'
+      ?'<span class="badge badge-red">Stornováno</span>'
+      :a.status==='ukonceno'
+      ?'<span class="badge badge-green">Ukončeno</span>'
+      :conf===tot
+      ?`<span class="badge badge-green"><i class="ti ti-checks" style="font-size:10px"></i> Potvrzeno</span>`
+      :`<span class="badge badge-gray">${conf}/${tot} potvrzeno</span>`;
+    const recips=a.recipients.map(uid=>USERS[uid]?USERS[uid].display.split(' ')[0]:uid).join(', ');
+    const klasLabel=a.klasifikace.label.toUpperCase();
+    const pacText=[a.prijmeni?a.prijmeni.toUpperCase():'',a.jmeno||''].filter(Boolean).join(' ')||(a.pacient||'');
+    const adresaText=[a.ulice||'',a.cp||'',a.mesto?capitalFirst(a.mesto):''].filter(Boolean).join(' ');
+    return`<div onclick="viewDetail(${a.id})" style="background:#fff;border-radius:14px;padding:0;margin-bottom:10px;cursor:pointer;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);opacity:${isAct?1:.65};border:1.5px solid ${isAct?'var(--border)':'var(--border2)'};transition:border-color .15s"
+      onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='${isAct?'var(--border)':'var(--border2)'}'">
+      <div style="background:${a.status==='storno'?'#6B7280':a.klasifikace.color||'var(--red)'};padding:10px 14px;display:flex;align-items:center;gap:8px">
+        <i class="ti ${a.klasifikace.icon}" style="color:#fff;font-size:16px;flex-shrink:0"></i>
+        <span style="font-size:13px;font-weight:800;color:#fff;letter-spacing:.5px;flex:1">${klasLabel}</span>
+        ${statusBadge}
+      </div>
+      <div style="padding:12px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+          <p style="font-size:15px;font-weight:700;color:var(--text);margin:0">${adresaText||a.adresa}</p>
+          <p style="font-size:11px;color:var(--text3);white-space:nowrap;margin:2px 0 0;flex-shrink:0">${ts(a.time)}</p>
+        </div>
+        ${pacText?`<p style="font-size:12px;color:var(--text2);margin:0 0 5px"><i class="ti ti-user" style="font-size:11px"></i> ${pacText}</p>`:''}
+        <p style="font-size:11px;color:var(--text3);margin:0"><i class="ti ti-users" style="font-size:10px"></i> ${recips}${a.notes&&a.notes.length?' · <span style="color:var(--orange)">● Doplněno</span>':''}</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════ DETAIL (výzva) ═══════════════ */
+function dataRows(a){
+  let r=`<div style="display:flex;gap:10px;align-items:flex-start"><i class="ti ti-map-pin" style="color:var(--teal);font-size:18px;margin-top:1px;flex-shrink:0"></i><div><p style="font-size:11px;color:var(--text2);margin-bottom:2px">Adresa</p><p style="font-size:14px;font-weight:600;color:var(--text)">${a.adresa}</p></div></div>`;
+  if(a.pacient) r+=`<div style="display:flex;gap:10px;align-items:flex-start"><i class="ti ti-user" style="color:var(--teal);font-size:18px;margin-top:1px;flex-shrink:0"></i><div><p style="font-size:11px;color:var(--text2);margin-bottom:2px">Pacient</p><p style="font-size:14px;font-weight:500;color:var(--text)">${a.pacient}</p></div></div>`;
+  if(a.oznam) r+=`<div style="display:flex;gap:10px;align-items:flex-start"><i class="ti ti-phone" style="color:var(--teal);font-size:18px;margin-top:1px;flex-shrink:0"></i><div><p style="font-size:11px;color:var(--text2);margin-bottom:2px">Oznamovatel</p><p style="font-size:14px;font-weight:500;color:var(--text)">${a.oznam}</p></div></div>`;
+  r+=`<div style="display:flex;gap:10px;align-items:flex-start"><i class="ti ti-clock" style="color:var(--teal);font-size:18px;margin-top:1px;flex-shrink:0"></i><div><p style="font-size:11px;color:var(--text2);margin-bottom:2px">Čas výzvy</p><p style="font-size:14px;font-weight:500;color:var(--text)">${tsFull(a.time)}</p></div></div>`;
+  return r;
+}
+function noteBubbles(notes){
+  return (notes||[]).map(n=>`<div class="note-bubble"><p style="font-size:10px;font-weight:600;color:var(--orange);margin-bottom:3px;letter-spacing:.3px">${n.author} · ${ts(n.time)}</p>${n.text}</div>`).join('');
+}
+function logRows(log){
+  return (log||[]).slice().reverse().map(l=>{
+    const ic=l.type==='odeslano'?'ti-send':l.type==='aktualizace'?'ti-refresh':l.type==='storno'?'ti-x':'ti-check';
+    const col=l.type==='storno'?'var(--red)':l.type==='aktualizace'?'var(--orange)':'var(--teal)';
+    return`<div class="log-item"><i class="ti ${ic}" style="color:${col};font-size:15px;flex-shrink:0;margin-top:1px"></i><div><p style="font-size:13px;color:var(--text)">${l.text}</p><p style="font-size:11px;color:var(--text3)">${tsFull(l.time)}</p></div></div>`;
+  }).join('');
+}
+
+function viewDetail(id){
+  const a=alerts.find(x=>x.id===id);if(!a) return;
+  const maps=`https://mapy.cz/zakladni?q=${encodeURIComponent(a.adresa)}`;
+  const isAct=a.status==='active';
+  const bc=a.status==='storno'?'var(--border2)':a.status==='ukonceno'?'var(--green)':'var(--teal)';
+  document.getElementById('detail-content').innerHTML=`
+    <div class="card" style="margin-bottom:12px;border-left:4px solid ${bc}">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <span class="badge badge-red" style="font-size:13px;padding:5px 10px"><i class="ti ${a.klasifikace.icon}"></i> ${a.klasifikace.label}</span>
+        ${scBadges(a.součinnost)}
+        ${a.status==='storno'?'<span class="badge badge-red">Stornováno</span>':''}
+        ${a.status==='ukonceno'?'<span class="badge badge-green">Ukončeno</span>':''}
+      </div>
+      <div style="display:grid;gap:12px">${dataRows(a)}</div>
+      ${a.notes&&a.notes.length?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><p style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px">Poznámky</p>${noteBubbles(a.notes)}</div>`:''}
+    </div>
+    <a href="${maps}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:var(--teal-light);border-radius:12px;color:var(--teal);font-weight:600;font-size:14px;text-decoration:none;margin-bottom:12px"><i class="ti ti-map-2"></i> Navigovat přes mapy.cz</a>
+    <div class="card" style="margin-bottom:12px">
+      <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">Příjemci výzvy</p>
+      ${a.recipients.map(uid=>{const u=USERS[uid];if(!u)return'';const conf=a.confirmed.includes(uid);const uko=a.ukoncil&&a.ukoncil.includes(uid);
+        return`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">${av(u)}<div style="flex:1"><p style="font-size:13px;font-weight:500;color:var(--text)">${u.display}</p><p style="font-size:11px;color:var(--text2)">${u.funkce}</p></div><div style="display:flex;gap:5px">${conf?'<span class="badge badge-green">Potvrzeno</span>':'<span class="badge badge-gray">Čeká</span>'}${uko?'<span class="badge badge-teal">Ukončeno</span>':''}</div></div>`;
+      }).join('')}
+    </div>
+    ${isAct?`<div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn btn-warning" style="flex:1;justify-content:center;font-size:13px" onclick="openEditModal(${a.id})"><i class="ti ti-refresh"></i> Doplnit</button>
+      <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:13px;color:var(--red)" onclick="openStornoModal(${a.id})"><i class="ti ti-x"></i> Stornovat</button>
+    </div>`:''}
+    <div class="card" style="margin-bottom:24px">
+      <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px"><i class="ti ti-history" style="vertical-align:-2px;margin-right:4px"></i>Průběh události</p>
+      ${logRows(a.log)}
+    </div>`;
+  show('detail');
+}
+
+function openEditModal(id){editingId=id;document.getElementById('edit-pozn').value='';openModal('overlay-edit');}
+function submitEdit(){
+  const txt=document.getElementById('edit-pozn').value.trim();if(!txt){alert('Zadejte informaci');return;}
+  const a=alerts.find(x=>x.id===editingId);if(!a)return;
+  if(!a.notes) a.notes=[];
+  a.notes.push({time:new Date(),author:'Dispečer',text:txt});
+  a.log.push({time:new Date(),type:'aktualizace',text:'Dispečer doplnil: '+txt});
+  _stSave();
+  a.recipients.forEach(uid=>USERS[uid].pending.push({alertId:a.id,type:'aktualizace',note:txt}));
+  // Broadcast doplnění do SM
+  try {
+    const ch = new BroadcastChannel('saazmed_dispatch');
+    ch.postMessage({ type: 'vyzva_doplnena', alertId: a.id, text: txt, casVyzvy: a.time });
+    ch.close();
+  } catch(e) {}
+  closeModal('overlay-edit');viewDetail(editingId);
+}
+function openStornoModal(id){stornoId=id;openModal('overlay-storno');}
+function submitStorno(){
+  const a=alerts.find(x=>x.id===stornoId);if(!a)return;
+  a.status='storno';
+  _stSave();
+  a.log.push({time:new Date(),type:'storno',text:'Výzva stornována dispečerem'});
+  a.recipients.forEach(uid=>USERS[uid].pending.push({alertId:a.id,type:'storno'}));
+  closeModal('overlay-storno');viewDetail(stornoId);
+}
+function backToList(){
+  if(CU.role==='dispatcher'){renderSent();show('dispatcher');}
+  else{renderCrewAlerts();show('crew');}
+}
+
+/* ═══════════════ CREW INIT ═══════════════ */
+function initCrew(){
+  document.getElementById('crew-av').style.background=CU.color;
+  document.getElementById('crew-av').textContent=CU.initials;
+  document.getElementById('crew-name').textContent=CU.display;
+  document.getElementById('crew-role').textContent=CU.funkce;
+  renderCrewAlerts();renderCrewAviza();updateAvizoBadge();
+  checkPendingNotifs();
+}
+
+/* ═══════════════ CREW TABS ═══════════════ */
+function crewTab(t){
+  document.getElementById('c-tab-vyzvy').style.display=t==='vyzvy'?'block':'none';
+  document.getElementById('c-tab-aviza').style.display=t==='aviza'?'block':'none';
+  ['vyzvy','aviza'].forEach(tab=>document.getElementById('ctab-'+tab).className='tab-btn'+(tab===t?' active':''));
+  if(t==='aviza'){renderCrewAviza();updateAvizoBadge();}
+}
+
+/* ═══════════════ CREW ALERTS ═══════════════ */
+function checkPendingNotifs(){
+  const p=USERS[CU.id].pending||[];if(!p.length)return;
+  const first=p[0];
+  const a=alerts.find(x=>x.id===first.alertId);
+  if(!a){USERS[CU.id].pending.shift();checkPendingNotifs();return;}
+  showCrewNotif(a,first);
+}
+function showCrewNotif(a,meta){
+  pendingNotifId=a.id;
+  const modal=document.getElementById('notif-modal');
+  const wrap=document.getElementById('notif-icon-wrap');
+  const icon=document.getElementById('notif-icon');
+  const title=document.getElementById('notif-title');
+  const klas=document.getElementById('notif-klas');
+  const addr=document.getElementById('notif-addr');
+  const note=document.getElementById('notif-note');
+  const acts=document.getElementById('notif-actions');
+  if(meta.type==='storno'){
+    modal.style.border='2px solid var(--border2)';wrap.style.background='var(--surface3)';icon.className='ti ti-x';icon.style.color='var(--text2)';
+    title.textContent='VÝZVA STORNOVÁNA';title.style.color='var(--text2)';
+    klas.textContent=a.klasifikace.label;addr.textContent=a.adresa;note.style.display='none';
+    acts.innerHTML=`<button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="dismissCrewNotif()"><i class="ti ti-check"></i> Beru na vědomí</button>`;
+  } else if(meta.type==='aktualizace'){
+    modal.style.border='2.5px solid var(--orange)';wrap.style.background='var(--orange-light)';icon.className='ti ti-refresh';icon.style.color='var(--orange)';
+    title.textContent='DOPLNĚNÍ VÝZVY';title.style.color='var(--orange)';
+    klas.textContent=a.klasifikace.label;addr.textContent=a.adresa;note.textContent=meta.note;note.style.display='block';
+    acts.innerHTML=`<button class="btn btn-warning" style="width:100%;justify-content:center;margin-bottom:8px" onclick="dismissCrewNotif()"><i class="ti ti-check"></i> Beru na vědomí</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:13px" onclick="dismissAndViewAlert()"><i class="ti ti-eye"></i> Zobrazit detail</button>`;
+  } else {
+    modal.style.border='2.5px solid var(--red)';wrap.style.background='var(--red-light)';icon.className='ti ti-alert-triangle';icon.style.color='var(--red)';
+    title.textContent='TÍSŇOVÁ VÝZVA';title.style.color='var(--red)';
+    klas.textContent=a.klasifikace.label;addr.textContent=a.adresa;note.style.display='none';
+    acts.innerHTML=`<button class="btn btn-danger" style="width:100%;justify-content:center;padding:13px;font-size:15px;border-radius:12px;margin-bottom:8px" onclick="confirmCrewAlert()"><i class="ti ti-check"></i> Potvrdit výzvu</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:13px" onclick="dismissAndViewAlert()"><i class="ti ti-eye"></i> Zobrazit detail</button>`;
+    playAlarm();
+  }
+  openModal('overlay-notif');
+}
+function confirmCrewAlert(){
+  const a=alerts.find(x=>x.id===pendingNotifId);
+  if(a&&!a.confirmed.includes(CU.id)){a.confirmed.push(CU.id);a.log.push({time:new Date(),type:'potvrzeno',text:CU.display+' potvrdil(a) výzvu'});_stSave();}
+  dismissCrewNotif();
+}
+function dismissCrewNotif(){
+  stopAlarm();
+  USERS[CU.id].pending.shift();
+  closeModal('overlay-notif');pendingNotifId=null;
+  renderCrewAlerts();setTimeout(checkPendingNotifs,300);
+}
+function dismissAndViewAlert(){const id=pendingNotifId;dismissCrewNotif();if(id)viewCrewDetail(id);}
+
+function renderCrewAlerts(){
+  const ca=document.getElementById('crew-alerts');
+  const mine=alerts.filter(a=>a.recipients.includes(CU.id));
+  if(!mine.length){ca.innerHTML='<div class="card" style="text-align:center;padding:48px"><i class="ti ti-mood-smile" style="font-size:40px;color:var(--text3)"></i><p style="color:var(--text2);margin-top:14px">Žádné aktivní výzvy</p></div>';return;}
+  ca.innerHTML=mine.map(a=>{
+    const conf=a.confirmed.includes(CU.id);
+    const uko=a.ukoncil&&a.ukoncil.includes(CU.id);
+    const isAct=a.status==='active';
+    const headerBg=a.status==='storno'?'#6B7280':uko?'#34C759':conf?'#0D7C7C':(a.klasifikace.color||'var(--red)');
+    const statusLabel=a.status==='storno'?'Stornováno':uko?'Ukončeno':conf?'✓ Potvrzeno':'! Potvrdit';
+    const statusBadge=a.status==='storno'?'badge-gray':uko?'badge-green':conf?'badge-teal':'badge-red';
+    const klasLabel=a.klasifikace.label.toUpperCase();
+    const pacText=[a.prijmeni?a.prijmeni.toUpperCase():'',a.jmeno||''].filter(Boolean).join(' ')||(a.pacient||'');
+    const adresaText=[a.ulice||'',a.cp||'',a.mesto?capitalFirst(a.mesto):''].filter(Boolean).join(' ');
+    return`<div onclick="viewCrewDetail(${a.id})" style="background:#fff;border-radius:14px;margin-bottom:10px;cursor:pointer;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);opacity:${isAct&&!uko?1:.7}">
+      <div style="background:${headerBg};padding:10px 14px;display:flex;align-items:center;gap:8px">
+        <i class="ti ${a.klasifikace.icon}" style="color:#fff;font-size:16px;flex-shrink:0"></i>
+        <span style="font-size:13px;font-weight:800;color:#fff;letter-spacing:.5px;flex:1">${klasLabel}</span>
+        <span class="badge ${statusBadge}">${statusLabel}</span>
+      </div>
+      <div style="padding:12px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+          <p style="font-size:15px;font-weight:700;color:var(--text);margin:0">${adresaText||a.adresa}</p>
+          <p style="font-size:11px;color:var(--text3);white-space:nowrap;margin:2px 0 0;flex-shrink:0">${ts(a.time)}</p>
+        </div>
+        ${pacText?`<p style="font-size:12px;color:var(--text2);margin:0 0 5px"><i class="ti ti-user" style="font-size:11px"></i> ${pacText}</p>`:''}
+        ${a.notes&&a.notes.length?'<p style="font-size:11px;color:var(--orange);margin:0">● Doplnění od dispečera</p>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewCrewDetail(id){
+  const a=alerts.find(x=>x.id===id);if(!a)return;
+  const conf=a.confirmed.includes(CU.id);
+  const uko=a.ukoncil&&a.ukoncil.includes(CU.id);
+  const isAct=a.status==='active';
+  const maps=`https://mapy.cz/zakladni?q=${encodeURIComponent(a.adresa)}`;
+  const bc=a.status==='storno'?'var(--border2)':uko?'var(--green)':conf?'var(--teal)':'var(--red)';
+  document.getElementById('detail-content').innerHTML=`
+    ${!conf&&isAct?`<div style="background:var(--red-light);border:1px solid #F09595;border-radius:12px;padding:13px 15px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+      <i class="ti ti-alert-triangle" style="color:var(--red);font-size:20px;flex-shrink:0"></i>
+      <p style="font-size:14px;font-weight:600;color:var(--red-mid)">Výzva vyžaduje potvrzení</p></div>`:''}
+    ${a.status==='storno'?`<div style="background:var(--surface3);border:1px solid var(--border2);border-radius:12px;padding:13px 15px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+      <i class="ti ti-x" style="color:var(--text2);font-size:20px;flex-shrink:0"></i>
+      <p style="font-size:14px;font-weight:600;color:var(--text2)">Výzva stornována dispečerem</p></div>`:''}
+    <div class="card" style="margin-bottom:12px;border-left:4px solid ${bc}">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <span class="badge badge-red" style="font-size:13px;padding:5px 10px"><i class="ti ${a.klasifikace.icon}"></i> ${a.klasifikace.label}</span>
+        ${scBadges(a.součinnost)}
+      </div>
+      <div style="display:grid;gap:12px">${dataRows(a)}</div>
+      ${a.notes&&a.notes.length?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><p style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px">Poznámky</p>${noteBubbles(a.notes)}</div>`:''}
+    </div>
+    ${isAct?`<a href="${maps}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:var(--teal-light);border-radius:12px;color:var(--teal);font-weight:600;font-size:14px;text-decoration:none;margin-bottom:12px"><i class="ti ti-map-2"></i> Navigovat přes mapy.cz</a>`:''}
+    ${!conf&&isAct?`<button class="btn btn-danger" style="width:100%;justify-content:center;padding:14px;font-size:15px;border-radius:12px;margin-bottom:8px" onclick="confirmFromDetail(${a.id})"><i class="ti ti-check"></i> Potvrdit výzvu</button>`
+    :conf&&isAct?`<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:var(--green-light);border-radius:12px;margin-bottom:8px"><i class="ti ti-circle-check" style="color:var(--green);font-size:18px"></i><span style="font-weight:600;color:var(--green);font-size:14px">Výzva potvrzena</span></div>`:''}
+    ${isAct&&conf&&!uko?`<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:12px" onclick="openUkoncitModal(${a.id})"><i class="ti ti-flag-check"></i> Ukončit událost</button>`:''}
+    ${uko?`<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:var(--teal-light);border-radius:12px;margin-bottom:12px"><i class="ti ti-flag-check" style="color:var(--teal);font-size:18px"></i><span style="font-weight:600;color:var(--teal);font-size:14px">Událost ukončena</span></div>`:''}
+    <div class="card" style="margin-bottom:24px"><p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px"><i class="ti ti-history" style="vertical-align:-2px;margin-right:4px"></i>Průběh události</p>${logRows(a.log)}</div>`;
+  show('detail');
+}
+function confirmFromDetail(id){
+  const a=alerts.find(x=>x.id===id);if(!a)return;
+  if(!a.confirmed.includes(CU.id)){a.confirmed.push(CU.id);a.log.push({time:new Date(),type:'potvrzeno',text:CU.display+' potvrdil(a) výzvu'});_stSave();}
+  viewCrewDetail(id);
+}
+function openUkoncitModal(id){ukoncitId=id;openModal('overlay-ukoncit');}
+function submitUkoncit(){
+  const a=alerts.find(x=>x.id===ukoncitId);if(!a)return;
+  if(!a.ukoncil) a.ukoncil=[];
+  if(!a.ukoncil.includes(CU.id)) a.ukoncil.push(CU.id);
+  a.log.push({time:new Date(),type:'ukonceno',text:CU.display+' ukončil(a) událost'});
+  if(a.ukoncil.length===a.recipients.length) a.status='ukonceno';
+  closeModal('overlay-ukoncit');viewCrewDetail(ukoncitId);
+}
+
+/* ═══════════════════════════════════════════
+   AVÍZO MODULE
+═══════════════════════════════════════════ */
+
+function openAvizoForm(){
+  ['av-prijmeni','av-jmeno','av-rc','av-vek','av-diag','av-stav','av-smer','av-eta'].forEach(id=>{
+    const el=document.getElementById(id);if(el) el.value='';
+  });
+  document.getElementById('av-pojistovna').value='';
+  openModal('overlay-avizo-form');
+}
+
+function submitAvizo(){
+  const prijmeni=document.getElementById('av-prijmeni').value.trim();
+  const jmeno=document.getElementById('av-jmeno').value.trim();
+  const diag=document.getElementById('av-diag').value.trim();
+  const smer=document.getElementById('av-smer').value.trim();
+  if(!prijmeni||!jmeno){alert('Zadejte jméno pacienta');return;}
+  if(!diag){alert('Zadejte pracovní diagnózu');return;}
+  if(!smer){alert('Zadejte směřování');return;}
+  const avizo={
+    id:Date.now(),
+    from:CU.id,
+    time:new Date(),
+    status:'pending', // pending | acknowledged | prijima | odmita | podminka
+    patient:{
+      prijmeni,jmeno,
+      rc:document.getElementById('av-rc').value.trim(),
+      pojistovna:document.getElementById('av-pojistovna').value,
+      vek:document.getElementById('av-vek').value.trim(),
+    },
+    diag,
+    stav:document.getElementById('av-stav').value.trim(),
+    smer,
+    eta:document.getElementById('av-eta').value.trim(),
+    chat:[] // {author, role, text, time, type}
+  };
+  // Add system message as first chat entry
+  avizo.chat.push({
+    author:'Systém',role:'system',type:'system',time:new Date(),
+    text:`Avízo odesláno – ${USERS[CU.id].display} (${USERS[CU.id].funkce})`
+  });
+  aviza.unshift(avizo);
+  _stSave();
+  // Notify dispatcher
+  const _dispU=getDispUser(); if(_dispU) _dispU.pending.push({avizoId:avizo.id,type:'avizo-nova'});
+  closeModal('overlay-avizo-form');
+  updateAvizoBadge();
+  renderCrewAviza();
+  openAvizoChat(avizo.id);
+}
+
+/* Render avízo card (structured) */
+function avizoCard(avObj,role){
+  const u=USERS[avObj.from];
+  const statusMap={
+    pending:{label:'Čeká na potvrzení',badge:'badge-gray'},
+    acknowledged:{label:'Přijato dispečerem',badge:'badge-teal'},
+    prijima:{label:'ZZ přijímá',badge:'badge-green'},
+    odmita:{label:'ZZ odmítá',badge:'badge-red'},
+    podminka:{label:'ZZ – s podmínkou',badge:'badge-orange'}
+  };
+  const sm=statusMap[avObj.status]||statusMap.pending;
+  return`<div class="avizo-card" style="margin-bottom:12px">
+    <div class="avizo-header">
+      ${av(u,32,8)}
+      <div style="flex:1"><p style="font-size:13px;font-weight:700;color:#fff">Avízo – ${u.display}</p><p style="font-size:11px;color:rgba(255,255,255,.7)">${ts(avObj.time)} · ${u.funkce}</p></div>
+      <span class="badge ${sm.badge}" style="font-size:11px">${sm.label}</span>
+    </div>
+    <div class="avizo-body">
+      <div class="avizo-row"><span class="avizo-label">Pacient</span><span class="avizo-val">${avObj.patient.prijmeni} ${avObj.patient.jmeno}${avObj.patient.vek?' ('+avObj.patient.vek+')':''}</span></div>
+      ${avObj.patient.rc?`<div class="avizo-row"><span class="avizo-label">Rodné číslo</span><span class="avizo-val">${avObj.patient.rc}</span></div>`:''}
+      ${avObj.patient.pojistovna?`<div class="avizo-row"><span class="avizo-label">Pojišťovna</span><span class="avizo-val">${avObj.patient.pojistovna}</span></div>`:''}
+      <div class="avizo-row"><span class="avizo-label">Pracovní diagnóza</span><span class="avizo-val" style="color:var(--red);font-weight:700">${avObj.diag}</span></div>
+      ${avObj.stav?`<div class="avizo-row"><span class="avizo-label">Stav pacienta</span><span class="avizo-val">${avObj.stav}</span></div>`:''}
+      <div class="avizo-row"><span class="avizo-label">Směřování</span><span class="avizo-val">${avObj.smer}</span></div>
+      ${avObj.eta?`<div class="avizo-row"><span class="avizo-label">ETA</span><span class="avizo-val">${avObj.eta}</span></div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderCrewAviza(){
+  const el=document.getElementById('crew-aviza-list');
+  const mine=aviza.filter(a=>a.from===CU.id);
+  if(!mine.length){el.innerHTML='<div class="card" style="text-align:center;padding:40px"><i class="ti ti-stethoscope" style="font-size:36px;color:var(--text3)"></i><p style="color:var(--text2);margin-top:12px">Žádná odeslaná avíza</p></div>';return;}
+  el.innerHTML=mine.map(a=>`<div onclick="openAvizoChat(${a.id})" style="cursor:pointer">${avizoCard(a,'crew')}</div>`).join('');
+}
+
+function renderDispAviza(){
+  const el=document.getElementById('disp-aviza-list');
+  if(!aviza.length){el.innerHTML='<div class="card" style="text-align:center;padding:40px"><i class="ti ti-stethoscope" style="font-size:36px;color:var(--text3)"></i><p style="color:var(--text2);margin-top:12px">Žádná příchozí avíza</p></div>';return;}
+  el.innerHTML=aviza.map(a=>{
+    const isPending=a.status==='pending';
+    return`<div style="cursor:pointer;position:relative" onclick="openAvizoChat(${a.id})">
+      ${isPending?'<div style="position:absolute;top:10px;right:10px;width:10px;height:10px;background:var(--red);border-radius:50%;z-index:1"></div>':''}
+      ${avizoCard(a,'dispatcher')}
+    </div>`;
+  }).join('');
+}
+
+function updateAvizoBadge(){
+  const pending=aviza.filter(a=>a.status==='pending').length;
+  // dispatcher badge
+  const db=document.getElementById('avizo-badge-disp');
+  if(db){db.style.display=pending?'inline':'none';if(pending) db.textContent=pending;}
+  // crew badge – count aviza with new dispatcher responses
+  const cb=document.getElementById('avizo-badge-crew');
+  if(cb&&CU&&CU.role==='crew'){
+    const myNew=aviza.filter(a=>a.from===CU.id&&(a.status==='prijima'||a.status==='odmita'||a.status==='podminka')&&!a.crewSeen).length;
+    cb.style.display=myNew?'inline':'none';if(myNew) cb.textContent=myNew;
+  }
+}
+
+/* ═══ AVÍZO CHAT ═══ */
+function openAvizoChat(id){
+  currentAvizoId=id;
+  const a=aviza.find(x=>x.id===id);if(!a)return;
+  // Mark acknowledged if dispatcher opening for first time
+  if(CU.role==='dispatcher'&&a.status==='pending'){
+    a.status='acknowledged';
+    a.chat.push({author:'Dispečer',role:'dispatcher',type:'system',time:new Date(),text:'Dispečer '+CU.display+' potvrdil příjem avíza'});
+    USERS[a.from].pending.push({avizoId:a.id,type:'avizo-acknowledged'});
+    _stSave();
+    updateAvizoBadge();
+    // Broadcastuj potvrzení zpět do SM
+    try {
+      const ch = new BroadcastChannel('saazmed_dispatch');
+      ch.postMessage({type:'avizo_acknowledged', avizoId:a.id, dispName:CU.display, text:'Dispečer '+CU.display+' potvrdil příjem avíza'});
+      ch.close();
+    } catch(e) {}
+  }
+  if(CU.role==='crew'&&(a.status==='prijima'||a.status==='odmita'||a.status==='podminka')) a.crewSeen=true;
+  updateAvizoBadge();
+  renderAvizoChat();
+  show('avizo');
+}
+
+function renderAvizoChat(){
+  const a=aviza.find(x=>x.id===currentAvizoId);if(!a)return;
+  const u=USERS[a.from];
+  const statusMap={
+    pending:{label:'Čeká na potvrzení',badge:'badge-gray'},
+    acknowledged:{label:'Přijato dispečerem',badge:'badge-teal'},
+    prijima:{label:'ZZ přijímá',badge:'badge-green'},
+    odmita:{label:'ZZ odmítá',badge:'badge-red'},
+    podminka:{label:'ZZ – s podmínkou',badge:'badge-orange'}
+  };
+  const sm=statusMap[a.status]||statusMap.pending;
+  document.getElementById('avizo-chat-subtitle').textContent=u.display+' · '+ts(a.time);
+  document.getElementById('avizo-status-badge').innerHTML=`<span class="badge ${sm.badge}">${sm.label}</span>`;
+
+  // Action buttons for dispatcher
+  const isDisp=CU.role==='dispatcher';
+  const canReply=isDisp&&(a.status==='acknowledged');
+  const dispActions=canReply?`
+    <div style="padding:12px 0 4px;border-top:1px solid var(--border);margin-top:8px">
+      <p style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px">Odpověď ZZ</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center;font-size:12px;padding:8px 10px" onclick="openZZReply()"><i class="ti ti-stethoscope"></i> Odeslat odpověď ZZ</button>
+      </div>
+    </div>`:
+    isDisp&&a.status!=='acknowledged'&&a.status!=='pending'?`
+    <div style="padding:12px 0 4px;border-top:1px solid var(--border);margin-top:8px">
+      <p style="font-size:11px;color:var(--text3);text-align:center;padding:8px 0">Odpověď ZZ již odeslána</p>
+    </div>`:'';
+
+  // Chat messages
+  const msgs=a.chat.map(m=>{
+    if(m.type==='system'){
+      return`<div class="chat-wrap" style="padding:4px 0"><div style="text-align:center"><span class="badge badge-gray" style="font-size:11px">${m.text} · ${ts(m.time)}</span></div></div>`;
+    }
+    const isMine=(m.role==='crew'&&CU.role==='crew')||(m.role==='dispatcher'&&CU.role==='dispatcher');
+    const mu=m.role==='crew'?USERS[a.from]:USERS[getDispKey()];
+    return`<div class="chat-msg ${isMine?'mine':''}">
+      ${!isMine?av(mu,28,6):''}
+      <div>
+        ${!isMine?`<p style="font-size:11px;color:var(--text3);margin-bottom:3px;${isMine?'text-align:right':''}">${m.author}</p>`:''}
+        <div class="chat-bubble ${isMine?'mine':'theirs'}">${m.text}</div>
+        <p class="chat-time" style="${isMine?'text-align:right':''}">${ts(m.time)}</p>
+      </div>
+      ${isMine?av(mu,28,6):''}
+    </div>`;
+  }).join('');
+
+  // Input row
+  const inputRow=`<div class="chat-input-row">
+    <input type="text" id="chat-input" placeholder="Zpráva..." style="flex:1;min-width:0" onkeydown="if(event.key==='Enter')sendChatMsg()">
+    <button class="btn btn-primary" style="padding:10px 14px;flex-shrink:0" onclick="sendChatMsg()"><i class="ti ti-send"></i></button>
+  </div>`;
+
+  document.getElementById('avizo-chat-content').innerHTML=`
+    ${avizoCard(a,CU.role)}
+    <div class="card" style="margin-bottom:12px">
+      ${dispActions}
+      <div class="chat-wrap">${msgs||'<p style="text-align:center;color:var(--text3);font-size:13px;padding:20px 0">Začněte konverzaci...</p>'}</div>
+      ${inputRow}
+    </div>`;
+
+  // scroll chat to bottom
+  setTimeout(()=>{const cw=document.querySelector('.chat-wrap');if(cw)cw.scrollTop=cw.scrollHeight;},50);
+}
+
+function sendChatMsg(){
+  const inp=document.getElementById('chat-input');
+  const txt=inp?inp.value.trim():'';if(!txt)return;
+  const a=aviza.find(x=>x.id===currentAvizoId);if(!a)return;
+  const msg={author:CU.display,role:CU.role,type:'msg',time:new Date(),text:txt};
+  a.chat.push(msg);
+  if(CU.role==='crew'){const _d=getDispUser();if(_d)_d.pending.push({avizoId:a.id,type:'avizo-chat'});}
+  else{if(USERS[a.from])USERS[a.from].pending.push({avizoId:a.id,type:'avizo-chat'});}
+  inp.value='';
+  _stSave();
+  // Broadcastuj zprávu do SM
+  try {
+    const ch = new BroadcastChannel('saazmed_dispatch');
+    ch.postMessage({type:'avizo_chat', avizoId:a.id, author:CU.display, text:txt, role:CU.role, fromST:true});
+    ch.close();
+  } catch(e) {}
+  renderAvizoChat();
+}
+
+function openZZReply(){
+  zzReplyDecision=null;
+  document.getElementById('zzr-zprava').value='';
+  ['zzr-prijima','zzr-odmita','zzr-podminka'].forEach(id=>{
+    const b=document.getElementById(id);
+    b.style.background='transparent';b.style.color='var(--text2)';
+  });
+  openModal('overlay-zz-reply');
+}
+function setZZReply(dec){
+  zzReplyDecision=dec;
+  const map={prijima:{bg:'var(--green)',col:'#fff'},odmita:{bg:'var(--red)',col:'#fff'},podminka:{bg:'var(--orange)',col:'#fff'}};
+  ['prijima','odmita','podminka'].forEach(d=>{
+    const b=document.getElementById('zzr-'+d);
+    b.style.background=d===dec?map[d].bg:'transparent';
+    b.style.color=d===dec?map[d].col:'var(--text2)';
+  });
+}
+function submitZZReply(){
+  if(!zzReplyDecision){alert('Vyberte odpověď ZZ');return;}
+  const zprava=document.getElementById('zzr-zprava').value.trim();
+  const a=aviza.find(x=>x.id===currentAvizoId);if(!a)return;
+  a.status=zzReplyDecision;
+  const decLabel={prijima:'✓ ZZ přijímá pacienta',odmita:'✗ ZZ odmítá pacienta',podminka:'⚡ ZZ přijímá s podmínkou'};
+  let chatTxt=decLabel[zzReplyDecision];
+  if(zprava) chatTxt+='\n'+zprava;
+  a.chat.push({author:'Dispečer',role:'dispatcher',type:'msg',time:new Date(),text:chatTxt});
+  if(USERS[a.from]) USERS[a.from].pending.push({avizoId:a.id,type:'avizo-zz-reply',decision:zzReplyDecision,zprava});
+  _stSave();
+  // Broadcastuj odpověď ZZ do SM
+  try {
+    const ch = new BroadcastChannel('saazmed_dispatch');
+    ch.postMessage({type:'avizo_zz_reply', avizoId:a.id, status:zzReplyDecision, text:chatTxt});
+    ch.close();
+  } catch(e) {}
+  closeModal('overlay-zz-reply');
+  renderAvizoChat();renderDispAviza();updateAvizoBadge();
+}
+
+function backFromAvizo(){
+  currentAvizoId=null;
+  if(CU.role==='dispatcher'){
+    renderDispAviza();
+    updateAvizoBadge();
+    show('dispatcher');
+    dispTab('aviza');
+  } else {
+    renderCrewAviza();
+    updateAvizoBadge();
+    show('crew');
+  }
+}
+
+/* ═══ AVÍZO NOTIF (dispatcher) ═══ */
+function checkPendingAvizaNotif(){
+  const pending=USERS[CU.id].pending||[];
+  const avizoNotif=pending.find(p=>p.avizoId);
+  if(!avizoNotif) return;
+  if(avizoNotif.type==='avizo-nova'){
+    pendingAvizoNotifId=avizoNotif.avizoId;
+    const a=aviza.find(x=>x.id===avizoNotif.avizoId);if(!a)return;
+    const u=USERS[a.from];
+    document.getElementById('an-from').textContent=u.display+' ('+u.funkce+')';
+    document.getElementById('an-diag').textContent=a.diag+' → '+a.smer;
+    openModal('overlay-avizo-notif');
+    USERS[CU.id].pending=USERS[CU.id].pending.filter(p=>p!==avizoNotif);
+  }
+}
+function openAvizoFromNotif(){
+  closeModal('overlay-avizo-notif');
+  if(pendingAvizoNotifId) openAvizoChat(pendingAvizoNotifId);
+}
+
+/* Periodically check for avizo notifs for dispatcher */
+setInterval(()=>{if(CU&&CU.role==='dispatcher') checkPendingAvizaNotif();updateAvizoBadge();},1500);
+
+/* ═══════════════ AUDIO ═══════════════ */
+function playAvizoAlarm() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[0,880],[0.2,660],[0.4,880],[0.6,660],[0.8,880]].forEach(([t,freq]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.5, ctx.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+t+0.18);
+      o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+0.18);
+    });
+  } catch(e) {}
+}
+function playAlarm(){
+  try{
+    if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    let count=0;
+    function beep(){
+      if(count>20)return;
+      const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+      osc.connect(gain);gain.connect(audioCtx.destination);
+      osc.type='square';
+      osc.frequency.setValueAtTime(880,audioCtx.currentTime);
+      osc.frequency.setValueAtTime(660,audioCtx.currentTime+0.15);
+      gain.gain.setValueAtTime(0.25,audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.35);
+      osc.start();osc.stop(audioCtx.currentTime+0.35);
+      count++;alarmTimer=setTimeout(beep,600);
+    }
+    beep();
+  }catch(e){}
+}
+function stopAlarm(){if(alarmTimer){clearTimeout(alarmTimer);alarmTimer=null;}}
+</script>
+</body>
+</html>
