@@ -1033,6 +1033,51 @@ function _stLoad() {
   } catch(e) { alerts=[]; aviza=[]; }
 }
 
+
+/* ═══════════════════════════════════════════════════════
+   FIREBASE – real-time komunikace přes internet
+   Nahrazuje BroadcastChannel pro cross-device použití
+═══════════════════════════════════════════════════════ */
+const _FB_URL = 'https://saaztext-default-rtdb.europe-west1.firebasedatabase.app';
+const _FB_CH  = 'saazmed_dispatch';
+let _fbLastId = null;
+let _fbStarted = false;
+
+async function fbSend(msg) {
+  try {
+    const payload = {...msg, _ts: Date.now(), _id: Math.random().toString(36).slice(2,10)};
+    await fetch(_FB_URL+'/'+_FB_CH+'/latest.json', {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+    });
+  } catch(e){ console.warn('fbSend error',e); }
+}
+
+function fbListen(onMsg) {
+  if (_fbStarted) return;
+  _fbStarted = true;
+  function poll() {
+    fetch(_FB_URL+'/'+_FB_CH+'/latest.json')
+      .then(r=>r.json())
+      .then(data=>{
+        if (data && data._id && data._id !== _fbLastId) {
+          const isNew = !_fbLastId && (Date.now()-data._ts > 10000);
+          _fbLastId = data._id;
+          if (!isNew) onMsg({data});
+        }
+      })
+      .catch(e=>console.warn('fbPoll',e))
+      .finally(()=>setTimeout(poll,1500));
+  }
+  // Init — zaregistruj aktuální ID bez callbacku
+  fetch(_FB_URL+'/'+_FB_CH+'/latest.json')
+    .then(r=>r.json())
+    .then(d=>{ if(d&&d._id) _fbLastId=d._id; poll(); })
+    .catch(()=>poll());
+}
+
+// Wrapper emulující BroadcastChannel
+function mkCh(){ return { postMessage: fbSend, close: ()=>{} }; }
+
 let alerts=[],aviza=[];
 _stLoad();
 let editingId=null,stornoId=null,ukoncitId=null;
@@ -1051,8 +1096,8 @@ function av(u,sz=34,r=8){return`<div style="width:${sz}px;height:${sz}px;border-
 
 /* ═══════════════ INIT ═══════════════ */
 // Naslouchej potvrzením ze SaazMedu
-const _smConfirmChannel = new BroadcastChannel('saazmed_dispatch');
-_smConfirmChannel.onmessage = function(evt) {
+// Firebase listener — příjem zpráv ze SM
+fbListen(function(evt) {
   if (!evt.data) return;
 
   if (evt.data.type === 'vyzva_potvrzena') {
@@ -1260,7 +1305,7 @@ function sendAlert(){
   a.recipients.forEach(uid=>USERS[uid].pending.push({alertId:a.id,type:'nova'}));
   // Odešli do SaazMedu přes BroadcastChannel
   try {
-    const ch = new BroadcastChannel('saazmed_dispatch');
+    const ch = mkCh();
     ch.postMessage({
       type:'nova_vyzva',
       payload:{
@@ -1390,7 +1435,7 @@ function submitEdit(){
   a.recipients.forEach(uid=>USERS[uid].pending.push({alertId:a.id,type:'aktualizace',note:txt}));
   // Broadcast doplnění do SM
   try {
-    const ch = new BroadcastChannel('saazmed_dispatch');
+    const ch = mkCh();
     ch.postMessage({ type: 'vyzva_doplnena', alertId: a.id, text: txt, casVyzvy: a.time });
     ch.close();
   } catch(e) {}
@@ -1683,7 +1728,7 @@ function openAvizoChat(id){
     updateAvizoBadge();
     // Broadcastuj potvrzení zpět do SM
     try {
-      const ch = new BroadcastChannel('saazmed_dispatch');
+      const ch = mkCh();
       ch.postMessage({type:'avizo_acknowledged', avizoId:a.id, dispName:CU.display, text:'Dispečer '+CU.display+' potvrdil příjem avíza'});
       ch.close();
     } catch(e) {}
@@ -1771,7 +1816,7 @@ function sendChatMsg(){
   _stSave();
   // Broadcastuj zprávu do SM
   try {
-    const ch = new BroadcastChannel('saazmed_dispatch');
+    const ch = mkCh();
     ch.postMessage({type:'avizo_chat', avizoId:a.id, author:CU.display, text:txt, role:CU.role, fromST:true});
     ch.close();
   } catch(e) {}
@@ -1809,7 +1854,7 @@ function submitZZReply(){
   _stSave();
   // Broadcastuj odpověď ZZ do SM
   try {
-    const ch = new BroadcastChannel('saazmed_dispatch');
+    const ch = mkCh();
     ch.postMessage({type:'avizo_zz_reply', avizoId:a.id, status:zzReplyDecision, text:chatTxt});
     ch.close();
   } catch(e) {}
