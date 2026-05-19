@@ -2,6 +2,12 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SaazText">
+  <meta name="theme-color" content="#E3000B">
+  <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SaazText</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
@@ -1231,13 +1237,19 @@ function doLogin(){
     CU={id:u,...USERS[u]};
     document.getElementById('login-err').style.display='none';
     if(CU.role==='dispatcher'){initDisp();show('dispatcher');}
-    else{initCrew();show('crew');}
+    else{
+      initCrew();show('crew');
+      requestNotifPermission().then(()=>{
+        setTimeout(()=>{ swSetUser({id:CU.id,role:CU.role,display:CU.display}); swSetLastId(); },1000);
+      });
+    }
   } else document.getElementById('login-err').style.display='block';
 }
 function doLogout(){
   stopAlarm();
   document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
   CU=null;selKlas=null;selUsers=[];selSC=[];
+  if(navigator.serviceWorker?.controller) navigator.serviceWorker.controller.postMessage({type:'LOGOUT'});
   editingId=stornoId=ukoncitId=pendingNotifId=pendingAvizoNotifId=currentAvizoId=zzReplyDecision=null;
   document.getElementById('login-user').value='';
   document.getElementById('login-pass').value='';
@@ -1966,6 +1978,70 @@ function playAlarm(){
   }catch(e){}
 }
 function stopAlarm(){if(alarmTimer){clearTimeout(alarmTimer);alarmTimer=null;}}
+
+
+/* ═══════════════════════════════════════════
+   PWA – Service Worker registrace
+═══════════════════════════════════════════ */
+let _swReg = null;
+
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    _swReg = await navigator.serviceWorker.register('./sw.js');
+    console.log('SW registered:', _swReg.scope);
+
+    // Poslouchej zprávy ze SW (nova výzva přijatá na pozadí)
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data.type === 'nova_vyzva' && CU && CU.role === 'crew') {
+        const p = e.data.payload;
+        if (alerts.find(a => a.id === p.id)) return;
+        const kl = KLAS.find(k => k.id === p.klasifikace) || {id:p.klasifikace, label:p.klasifikaceLabel||p.klasifikace, icon:'ti-alert-circle', color:'var(--red)'};
+        const a = {
+          id:p.id, klasifikace:kl,
+          ulice:p.ulice||'',cp:p.cp||'',co:p.co||'',mesto:p.mesto||'',
+          adresa:p.adresa||'', upresneni:p.upresneni||'',
+          pacient:p.pacient||'',prijmeni:p.prijmeni||'',jmeno:p.jmeno||'',
+          pohlavi:p.pohlavi||'',vek:p.vek||'',
+          oznam:p.oznam||'',oznamTel:p.oznamTel||'',poznamka:p.poznamka||'',
+          casVyzvy:p.casVyzvy, recipients:p.recipients||[],
+          confirmed:[],ukoncil:[],status:'active',
+          notes:p.poznamka?[{time:new Date(),author:'Dispečer',text:p.poznamka}]:[],
+          log:[{time:new Date(),type:'odeslano',text:'Výzva přijata'}]
+        };
+        alerts.unshift(a);
+        USERS[CU.id].pending.push({alertId:a.id,type:'nova'});
+        _stSave();
+        renderCrewAlerts();
+        setTimeout(checkPendingNotifs, 300);
+      }
+    });
+  } catch(e) { console.warn('SW registration failed:', e); }
+}
+
+// Pošli SW informaci o přihlášeném uživateli
+function swSetUser(user) {
+  if (!navigator.serviceWorker?.controller) return;
+  navigator.serviceWorker.controller.postMessage({ type:'SET_USER', user });
+}
+
+function swSetLastId() {
+  if (!navigator.serviceWorker?.controller) return;
+  navigator.serviceWorker.controller.postMessage({ type:'SET_LAST_ID', id: _fbLastId });
+}
+
+// Registruj SW při načtení stránky
+window.addEventListener('load', () => {
+  registerSW();
+});
+
+// Požádej o notifikace
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+}
 </script>
 </body>
 </html>
